@@ -2,8 +2,6 @@ import React from 'react';
 import { Button, Row, Col, Form, Input } from 'antd';
 import { useNavigate } from "react-router-dom";
 
-
-
 const Login = () => {
     const navigate = useNavigate();
 
