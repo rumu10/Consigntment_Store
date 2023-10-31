@@ -22,3 +22,12 @@ serverless deploy
 
 ```
 
+## Testing the endpoints
+To test the endpoint you need to have curl installe in your system and run:
+```bash
+curl -X GET https://7pvpeztz21.execute-api.us-east-1.amazonaws.com/dev/ENDPOINT
+```
+### Example: Testing the connection to the db
+```bash
+curl -X GET https://7pvpeztz21.execute-api.us-east-1.amazonaws.com/dev/test_db
+```
