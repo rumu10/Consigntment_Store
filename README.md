@@ -14,4 +14,4 @@ Now run:
 npm run dev
 ```
 ## How to run the backend
-WIP
+WIP..
