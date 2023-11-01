@@ -16,7 +16,7 @@ const Login = () => {
 
                 navigate("/customer-view")
             } catch (e) {
-                console.log(e)
+                console.log(e);
             }
 
         } else {
