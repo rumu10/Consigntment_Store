@@ -18,7 +18,7 @@ app.use(express.json());
 
 app.post('/login', (req, res) => {
     const body = req.body;
-    console.log(body)
+    console.log(body);
     res.send({ received: true, body: body });
 });
 
