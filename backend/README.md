@@ -4,7 +4,8 @@ This backend works with the serverless framework and express.js .
 To install/run, you need to install serverless globally:
 ```bash
 npm install -g serverless
-
+npm install --save-dev serverless-offline
+serverless plugin install -n serverless-offline
 ```
 Then, you need to configure your AWS credentials:
 ```bash
@@ -19,7 +20,10 @@ The project should be working :).
 Once you have added a new method/whaterver. To deploy it, run :
 ```bash
 serverless deploy
-
+```
+To run in local:
+```bash
+serverless offline
 ```
 
 ## Testing the endpoints
