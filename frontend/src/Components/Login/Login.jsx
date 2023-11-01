@@ -20,7 +20,7 @@ const Login = () => {
             }
 
         } else {
-            console.log('Success for sitemanager:', values);
+            console.log('Success for sitemanager login:', values);
             try {
                 const { data } = await axios.post(`${API_ENDPOINT}login`, values);
                 console.log(data)
