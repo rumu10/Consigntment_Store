@@ -2,7 +2,10 @@
   "name": "Consigntment Store",
   "version": "0.1.0",
   "private": true,
-  "author": ["Jaime Bowen", "Feiquan Liu"],
+  "author": [
+    "Jaime Bowen",
+    "Sudipta Biswas","Feiquan Liu","Dong Tang"
+  ],
   "scripts": {
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
@@ -10,5 +13,8 @@
   },
   "dependencies": {
     "concurrently": "^8.2.2"
+  },
+  "devDependencies": {
+    "serverless-offline": "^13.2.0"
   }
 }

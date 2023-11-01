@@ -16,9 +16,9 @@ const pool = mysql.createPool(dbConfig);
 
 app.use(express.json());
 
-app.post('/endpoint', (req, res) => {
+app.post('/login', (req, res) => {
     const body = req.body;
-    // Do something with the body
+    console.log(body)
     res.send({ received: true, body: body });
 });
 

@@ -1,16 +1,35 @@
 import React from 'react';
 import { Button, Row, Col, Form, Input } from 'antd';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import { API_ENDPOINT } from '../../config';
 
 const Login = () => {
     const navigate = useNavigate();
 
-    const onFinish = (values) => {
+    const onFinish = async (values) => {
         if (values?.lat) {
             console.log('Success for customer:', values);
-            navigate("/customer-view")
+            try {
+                const { data } = await axios.post(`${API_ENDPOINT}login`, values);
+                console.log(data)
+
+                navigate("/customer-view")
+            } catch (e) {
+                console.log(e)
+            }
+
         } else {
             console.log('Success for sitemanager:', values);
+            try {
+                const { data } = await axios.post(`${API_ENDPOINT}login`, values);
+                console.log(data)
+
+                navigate("/customer-view")
+            } catch (e) {
+                console.log(e)
+            }
+
             navigate("/site-manager-view")
         }
 
