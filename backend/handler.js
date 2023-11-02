@@ -175,7 +175,7 @@ app.post('/computers', (req, res) => {
 });
 
 
-// Report total inventory in amount in entire site-fq
+// Report total inventory in amount in entire site
 app.get('/computers', (req, res) => {
     pool.getConnection((err, connection) => {
         if (err) {
@@ -200,7 +200,7 @@ app.get('/computers', (req, res) => {
     });
 });
 
-// Report total balance in amount in entire site-fq
+// Report total balance in amount in entire site
 app.get('/computers', (req, res) => {
     pool.getConnection((err, connection) => {
         if (err) {
