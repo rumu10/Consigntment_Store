@@ -194,7 +194,8 @@ app.get('/siteInventory', (req, res) => {
                 res.status(500).send({ status: 'error', message: 'Failed to fetch the computer list from the database.' });
                 return;
             }
-
+            
+            console.log(results)
             res.send({ status: 'success', siteInventory: Math.sum(results) });
         });
     });
