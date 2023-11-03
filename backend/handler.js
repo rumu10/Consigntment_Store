@@ -185,7 +185,7 @@ app.get('/siteInventory', (req, res) => {
         }
 
 
-        const query = 'SELECT sum(price) FROM computers where status = 1';
+        const query = 'SELECT price FROM computers where status = 1';
         connection.query(query, (err, results) => {
             connection.release();
 
@@ -195,7 +195,7 @@ app.get('/siteInventory', (req, res) => {
                 return;
             }
 
-            res.send({ status: 'success', siteInventory: results });
+            res.send({ status: 'success', siteInventory: Math.sum(results) });
         });
     });
 });
