@@ -176,7 +176,7 @@ app.post('/computers', (req, res) => {
 
 
 // Report total inventory in amount in entire site
-app.get('/computers', (req, res) => {
+app.get('/siteInventory', (req, res) => {
     pool.getConnection((err, connection) => {
         if (err) {
             console.error('Database connection error:', err);
@@ -195,13 +195,13 @@ app.get('/computers', (req, res) => {
                 return;
             }
 
-            res.send({ status: 'success', totalInventory: results });
+            res.send({ status: 'success', siteInventory: results });
         });
     });
 });
 
 // Report total balance in amount in entire site
-app.get('/computers', (req, res) => {
+app.get('/siteBalance', (req, res) => {
     pool.getConnection((err, connection) => {
         if (err) {
             console.error('Database connection error:', err);
@@ -220,7 +220,7 @@ app.get('/computers', (req, res) => {
                 return;
             }
 
-            res.send({ status: 'success', totalBalance: results });
+            res.send({ status: 'success', siteBalance: results });
         });
     });
 });
