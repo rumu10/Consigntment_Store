@@ -211,7 +211,7 @@ app.get('/siteBalance', (req, res) => {
         }
 
 
-        const query = 'SELECT sum(price)*0.95 FROM computers where status = 0';
+        const query = 'SELECT sum(price)*0.95 as siteBalance FROM computers where status = 0';
         connection.query(query, (err, results) => {
             connection.release();
 
