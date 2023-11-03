@@ -152,6 +152,81 @@ app.delete('/computers/:id', (req, res) => {
 
 
 
+
+app.post('/computers', (req, res) => {
+    const computerData = req.body;
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Database connection error:', err);
+            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
+            return;
+        }
+        const query = 'INSERT INTO computers SET ?';
+        connection.query(query, computerData, (err) => {
+            connection.release();
+            if (err) {
+                console.error('Database query error:', err);
+                res.status(500).send({ status: 'error', message: 'Failed to add computer to the database.' });
+                return;
+            }
+            res.send({ status: 'success', message: 'Computer added successfully.' });
+        });
+    });
+});
+
+
+// Report total inventory in amount in entire site
+app.get('/siteInventory', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Database connection error:', err);
+            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
+            return;
+        }
+
+
+        const query = 'SELECT sum(price) as siteInventory FROM computers where status = 1';
+        connection.query(query, (err, results) => {
+            connection.release();
+
+            if (err) {
+                console.error('Database query error:', err);
+                res.status(500).send({ status: 'error', message: 'Failed to fetch the computer list from the database.' });
+                return;
+            }
+            
+            
+            res.send({ status: 'success', siteInventory: results});
+        });
+    });
+});
+
+// Report total balance in amount in entire site
+app.get('/siteBalance', (req, res) => {
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Database connection error:', err);
+            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
+            return;
+        }
+
+
+        const query = 'SELECT sum(price)*0.95 as siteBalance FROM computers where status = 0';
+        connection.query(query, (err, results) => {
+            connection.release();
+
+            if (err) {
+                console.error('Database query error:', err);
+                res.status(500).send({ status: 'error', message: 'Failed to fetch the computer list from the database.' });
+                return;
+            }
+
+            res.send({ status: 'success', siteBalance: results });
+        });
+    });
+});
+
+
 app.post('/test', (req, res) => {
     const body = req.body;
     // Do something with the body
