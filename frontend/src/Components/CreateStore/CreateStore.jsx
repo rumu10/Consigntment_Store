@@ -9,7 +9,7 @@ const CreateStore = () => {
 
     const onFinish_CreateStore = async (values) => {
         console.log("registering store for: ", values)
-        navigate("/store-view")
+        navigate("/login")
     }
 
     return (
