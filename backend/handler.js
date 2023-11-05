@@ -137,7 +137,7 @@ app.delete('/computers/:id', (req, res) => {
             res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
             return;
         }
-        const query = 'DELETE FROM computers WHERE id = ?';
+        const query = 'DELETE FROM computers WHERE computer_id = ?';
         connection.query(query, [computerId], (err) => {
             connection.release();
             if (err) {
@@ -175,6 +175,9 @@ app.post('/computers', (req, res) => {
 });
 
 
+
+
+
 // Report total inventory in amount in entire site
 app.get('/siteInventory', (req, res) => {
     pool.getConnection((err, connection) => {
@@ -196,7 +199,7 @@ app.get('/siteInventory', (req, res) => {
             }
             
             
-            res.send({ status: 'success', siteInventory: results});
+            res.send({ status: 'success', siteInventory: results[0]["siteInventory"]});
         });
     });
 });
@@ -221,7 +224,7 @@ app.get('/siteBalance', (req, res) => {
                 return;
             }
 
-            res.send({ status: 'success', siteBalance: results });
+            res.send({ status: 'success', siteBalance: results[0]["siteBalance"] });
         });
     });
 });

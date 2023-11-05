@@ -174,6 +174,10 @@ const StoreOwner = () => {
                     <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '24px' }}>
                         50
                     </div>
+                    <h2 style={{ textAlign: 'center', marginTop: '70px', fontSize: '14px' }}>Store Inventory:</h2>
+                    <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '24px' }}>
+                        50
+                    </div>
                 </Col>
             </Row>
         </div>
