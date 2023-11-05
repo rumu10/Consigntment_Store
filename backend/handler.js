@@ -278,7 +278,6 @@ app.delete('/computers/:computerId', (req, res) => {
             return;
         }
         const query = 'DELETE FROM computers WHERE computer_id = ?';
-        const query = 'DELETE FROM computers WHERE computer_id = ?';
         connection.query(query, [computerId], (err) => {
             connection.release();
             if (err) {
