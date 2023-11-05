@@ -27,8 +27,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:      
       # Use the node version specified in the strategy    
-      - name: Use Node.js ${{ matrix.node-version }}
-        if: ${{ github.event.schedule || matrix.env == github.event.inputs.env }}      
+      - name: Use Node.js ${{ matrix.node-version }}      
         uses: actions/setup-node@v1      
         with:        
           node-version: ${{ matrix.node-version }}

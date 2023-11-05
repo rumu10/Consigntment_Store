@@ -1,8 +1,16 @@
 name: Test two actions
-on: [push]
+
+on:
+  push:
+    branches:
+      - develop
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: ./frontend
+      - name: Checkout code
+        uses: actions/checkout@vv2
+
+      - name: Use action from frontend directory
+        uses: ./frontend
