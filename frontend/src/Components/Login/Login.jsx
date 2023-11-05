@@ -7,41 +7,60 @@ import { API_ENDPOINT } from '../../config';
 const Login = () => {
     const navigate = useNavigate();
 
-    const onFinish = async (values) => {
-        if (values?.lat) {
-            console.log('Success for customer:', values);
-            try {
-                const { data } = await axios.post(`${API_ENDPOINT}login`, values);
-                console.log(data)
+    const onFinish_SiteManager = async (values) => {
 
-                navigate("/customer-view")
-            } catch (e) {
-                console.log(e);
-            }
-
-        } else {
-            console.log('Success for sitemanager login:', values);
-            try {
-                const { data } = await axios.post(`${API_ENDPOINT}login`, values);
-                console.log(data)
-
-                navigate("/customer-view")
-            } catch (e) {
-                console.log(e)
-            }
+        console.log('Success for site manager:', values);
+        try {
+            const { data } = await axios.post(`${API_ENDPOINT}login`, values);
+            console.log(data)
 
             navigate("/site-manager-view")
+        } catch (e) {
+            console.log(e);
         }
+        navigate("/site-manager-view")
+    };
 
+    const onFinish_StoreOwner = async (values) => {
+        console.log('Success for store owner:', values);
+        try {
+            const { data } = await axios.post(`${API_ENDPOINT}login`, values);
+            console.log(data)
+
+            navigate("/store-view")
+        } catch (e) {
+            console.log(e);
+        }
+        navigate("/store-view")
+    };
+
+    const onFinish_Customer = async (values) => {
+
+        console.log('Success for customer:', values);
+        try {
+            const { data } = await axios.post(`${API_ENDPOINT}login`, values);
+            console.log(data)
+
+            navigate("/customer-view")
+        } catch (e) {
+            console.log(e);
+        }
+        navigate("/customer-view")
+    };
+
+    const onFinish_CreateStore = async (values) => {
+
+        console.log('create store called.');
+        navigate("/create-store")
     };
 
     return (
         <div className='loginPage'>
-            <h2 style={{ textAlign: 'center' }}>Welcome to Consignment Store</h2>
+            <h2 style={{ textAlign: 'center' }}>Welcome to Consignment Store test</h2>
             <br />
             <br />
             <Row>
-                <Col className="gutter-row" span={12}>
+                <Col className="gutter-row" span={9}>
                     <Form
                         name="basic"
                         labelCol={{ span: 8, }}
@@ -49,7 +68,57 @@ const Login = () => {
                         style={{
                             maxWidth: 600, marginTop: "50px"
                         }}
-                        onFinish={onFinish}
+                        onFinish={onFinish_SiteManager}
+                        autoComplete="off"
+                    >
+                        <Form.Item
+                            label="Administrator"
+                            name="adminEmail"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Please input your email!',
+                                },
+                            ]}
+                        >
+                            <Input />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Password"
+                            name="password"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Please input your password!',
+                                },
+                            ]}
+                        >
+                            <Input.Password />
+                        </Form.Item>
+
+
+                        <Form.Item
+                            wrapperCol={{
+                                offset: 8,
+                                span: 16,
+                            }}
+                        >
+                            <Button type="primary" name="SiteManager" htmlType="submit">
+                                Log in as Site Manager
+                            </Button>
+                        </Form.Item>
+
+                    </Form>
+
+                    <Form
+                        name="siteOwnerLogin"
+                        labelCol={{ span: 8, }}
+                        wrapperCol={{ span: 16, }}
+                        style={{
+                            maxWidth: 600, marginTop: "50px"
+                        }}
+                        onFinish={onFinish_StoreOwner}
                         autoComplete="off"
                     >
                         <Form.Item
@@ -85,33 +154,41 @@ const Login = () => {
                                 span: 16,
                             }}
                         >
-                            <Button type="primary" htmlType="submit">
-                                Log in as Site Manager
+                            <Button type="primary" name="SiteManager" htmlType="submit">
+                                Log in as Site Owner
                             </Button>
                         </Form.Item>
+                    </Form>
 
-                        {/* <Form.Item
+                    <Form
+                        name="basic2"
+
+                        onFinish={onFinish_CreateStore}
+                        autoComplete="off"
+                    >
+                        {<Form.Item
                             wrapperCol={{
                                 offset: 8,
                                 span: 16,
                             }}
                         >
-                            <Button type="primary" htmlType="submit">
-                                Log in as Site Manager
+                            <Button type="primary" style={{ background: "green", borderColor: "yellow" }} htmlType="submit" >
+                                Click to Create Store
                             </Button>
-                        </Form.Item> */}
+                        </Form.Item>}
 
                     </Form>
                 </Col>
+
                 <Col className="gutter-row" span={6}>
                     <Form
-                        name="basic2"
+                        name="basic3"
                         labelCol={{ span: 8, }}
                         wrapperCol={{ span: 16, }}
                         style={{
                             maxWidth: 600, marginTop: "50px"
                         }}
-                        onFinish={onFinish}
+                        onFinish={onFinish_Customer}
                         autoComplete="off"
                     >
                         <Form.Item
@@ -147,7 +224,7 @@ const Login = () => {
                                 span: 16,
                             }}
                         >
-                            <Button type="primary" htmlType="submit">
+                            <Button type="primary" name="Customer" htmlType="submit">
                                 Log in as Customer
                             </Button>
                         </Form.Item>
