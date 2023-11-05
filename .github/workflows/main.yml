@@ -6,4 +6,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-         path: frontend
+         path: ./frontend
