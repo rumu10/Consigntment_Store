@@ -37,7 +37,7 @@ const Login = () => {
 
     return (
         <div className='loginPage'>
-            <h2 style={{ textAlign: 'center' }}>Welcome to Consignment Store</h2>
+            <h2 style={{ textAlign: 'center' }}>Welcome to Consignment Store test</h2>
             <br />
             <br />
             <Row>
