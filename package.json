@@ -4,7 +4,9 @@
   "private": true,
   "author": [
     "Jaime Bowen",
-    "Sudipta Biswas","Feiquan Liu","Dong Tang"
+    "Sudipta Biswas",
+    "Feiquan Liu",
+    "Dong Tang"
   ],
   "scripts": {
     "dev:backend": "cd backend && npm run dev",

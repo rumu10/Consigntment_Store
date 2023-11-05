@@ -5,6 +5,7 @@ import Login from './Components/Login/Login';
 import StoreOwner from './Components/StoreOwner/StoreOwner';
 import SiteManager from './Components/SiteManager/SiteManager';
 import Customer from './Components/Customer/Customer';
+import CreateStore from './Components/CreateStore/CreateStore';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/store-view" element={<StoreOwner />} />
         <Route path="/site-manager-view" element={<SiteManager />} />
         <Route path="/customer-view" element={<Customer />} />
+        <Route path="/create-store" element={<CreateStore />}/>
       </Routes>
 
     );
