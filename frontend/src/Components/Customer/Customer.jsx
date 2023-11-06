@@ -61,7 +61,7 @@ const Customer = () => {
             width: '25%',
             dataIndex: '',
             key: 'x',
-            render: () => <Button >Buy Computer</Button>,
+            render: () => <Button type="primary">Buy Computer</Button>,
         },
 
     ];
