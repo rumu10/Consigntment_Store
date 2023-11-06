@@ -3,6 +3,7 @@ const { Store } = require('./models/Store');
 const express = require('express');
 const mysql = require('mysql');
 const serverlessHttp = require('serverless-http');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
@@ -16,10 +17,31 @@ const dbConfig = {
 const pool = mysql.createPool(dbConfig);
 app.use(express.json());
 
-app.post('/login', (req, res) => {
-    const body = req.body;
-    console.log(body);
-    res.send({ received: true, body: body });
+app.post('/login-site-manager', (req, res) => {
+    const managerData = req.body;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Database connection error:', err);
+            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
+            return;
+        }
+
+        const userData = `select * from manager where email = '${managerData.email}' `;
+        connection.query(userData, async (err, results) => {
+            connection.release();
+            if (err) {
+                console.error('Database query error:', err);
+                res.status(500).send({ status: 'error', message: 'Failed to add store to the database.' });
+                return;
+            }
+
+            const isEqual = await bcrypt.compare(managerData.password, results[0].password_hash);
+            if (isEqual) {
+                res.send({ status: 'success', message: 'Login successfully.', data: results[0] });
+            }
+        });
+    });
 });
 
 app.get('/managers', (req, res) => {
@@ -45,7 +67,7 @@ app.get('/managers', (req, res) => {
 
         const queryParams = [];
         if (managerId) {
-            managerQuery += ' WHERE s.manager_Id = ?';
+            managerQuery += ' WHERE s.manager_id = ?';
             queryParams.push(managerId);
         }
 
