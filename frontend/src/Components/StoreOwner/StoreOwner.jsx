@@ -75,7 +75,6 @@ const StoreOwner = () => {
         },
         {
             title: '',
-            width:'5%',
             dataIndex: '',
             key: 'x',
             render: (text, record) =>
