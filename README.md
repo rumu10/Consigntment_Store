@@ -20,7 +20,7 @@ cd ..
 
 ### Backend requirements
 ```bash
-cd frontend
+cd backend
 npm install
 cd ..
 ```
