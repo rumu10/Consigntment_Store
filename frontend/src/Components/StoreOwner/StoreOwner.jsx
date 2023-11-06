@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Row, Col, Form, InputNumber, Table, Select, Spin, Flex, Modal } from 'antd';
+import { Button, Row, Col, Form, InputNumber, Input, Table, Select, Spin, Flex, Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from "react-router-dom";
 import CustomNotification from '../../Util/Notification/Notification';
@@ -31,6 +31,11 @@ const StoreOwner = () => {
             dataIndex: 'key',
             key: 'name',
 
+        },
+        {
+            title: 'Model Name',
+            dataIndex: 'computerName',
+            key: 'name',
         },
         {
             title: 'Memory',
@@ -70,14 +75,14 @@ const StoreOwner = () => {
         },
         {
             title: '',
-
+            width:'5%',
             dataIndex: '',
             key: 'x',
             render: (text, record) =>
                 <>
                     <Flex gap="small" wrap="wrap">
-                        <Button style={{ background: '#68D120' }} type="primary" >Modify</Button>
-                        <Button type="primary" danger onClick={e => onRemoveComputer(record)} >Remove</Button>
+                        <Button size='small' style={{ background: '#68D120' }} type="primary" >Modify</Button>
+                        <Button size='small' type="primary" danger onClick={e => onRemoveComputer(record)} >Remove</Button>
                     </Flex>
 
                 </>
@@ -180,7 +185,7 @@ const StoreOwner = () => {
             <div className='store-owner' style={{ margin: '30px' }}>
                 <Row>
                     <Col className="gutter-row" lg={{ span: 5, offset: 0 }}>
-
+                        <h2 style={{ textAlign: 'center' }}>Add Computer to store</h2>
                         <Form
                             name="basic"
                             labelCol={{ span: 8, }}
@@ -192,8 +197,18 @@ const StoreOwner = () => {
                             form={form}
                         >
 
-                            <h2 style={{ textAlign: 'center' }}>Add Computer to store</h2>
 
+                            <Form.Item
+                                name="computerName"
+                                label="Computer Name"
+                                rules={[
+                                    {
+                                        required: true,
+                                    },
+                                ]}
+                            >
+                                <Input />
+                            </Form.Item>
 
                             <Form.Item
                                 name="memory"
@@ -274,7 +289,6 @@ const StoreOwner = () => {
                                 >
                                 </Select>
                             </Form.Item>
-
                             <Form.Item
                                 name="price"
                                 label="Price"
