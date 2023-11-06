@@ -24,12 +24,14 @@ const StoreOwner = () => {
         {
             key: '1',
             name: 'Computer 1',
+            conf: '32GB, 1TB, 12th Gen Intel i9, NVIDIA GeForce RTX 4090',
             p: 20
 
         },
         {
             key: '2',
             name: 'Computer 2',
+            conf: '8GB, 1TB, 11th Gen Intel i9, NVIDIA GeForce RTX 4080',
             p: 30
 
         },
@@ -39,6 +41,12 @@ const StoreOwner = () => {
         {
             title: 'Computer',
             dataIndex: 'name',
+            key: 'name',
+            width: '25%'
+        },
+        {
+            title: 'Configuration',
+            dataIndex: 'conf',
             key: 'name',
             width: '25%'
         },
@@ -162,6 +170,18 @@ const StoreOwner = () => {
                         </Form.Item>
 
                         <Form.Item
+                            name="computer name"
+                            label="Computer Name"
+                            rules={[
+                                {
+                                    required: true,
+                                },
+                            ]}
+                        >
+                            <Input />
+                        </Form.Item>
+
+                        <Form.Item
                             name="price"
                             label="Price"
                             rules={[
@@ -172,6 +192,8 @@ const StoreOwner = () => {
                         >
                             <Input />
                         </Form.Item>
+
+
 
                         <Form.Item >
                             <Button type="primary" htmlType="submit">
