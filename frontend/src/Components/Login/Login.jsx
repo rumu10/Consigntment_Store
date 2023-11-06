@@ -74,7 +74,7 @@ const Login = () => {
             <br />
             <br />
             <Row>
-                <Col className="gutter-row" lg={{ span: 9, offset: 3 }}>
+                <Col className="gutter-row" lg={{ span: 9, offset: 1 }}>
                     <Form
                         name="siteOwnerLogin"
                         labelCol={{ span: 8, }}
@@ -115,17 +115,17 @@ const Login = () => {
                         <Flex gap="small" wrap="wrap" style={{ marginLeft: '150px' }}>
                             <Form.Item
                                 wrapperCol={{
-                                    offset: 8,
+                                    offset: 3,
                                     span: 16,
                                 }}
                             >
                                 <Button type="primary" name="SiteManager" htmlType="submit" onClick={e => onLogin('site')}>
-                                    Log in as Site Owner
+                                    Log in as Site Manager
                                 </Button>
                             </Form.Item>
                             <Form.Item
                                 wrapperCol={{
-                                    offset: 8,
+                                    offset: 4,
                                     span: 16,
                                 }}
                             >
@@ -136,7 +136,7 @@ const Login = () => {
                         </Flex>
 
                     </Form>
-                    <h4 style={{ marginLeft: '150px' }}>Are you a new store owner that needs to be registered? Click create store below!</h4>
+                    <h4 style={{ marginLeft: '180px' }}>Are you a new store owner that needs to be registered? Click create store below!</h4>
                     <br />
                     <Form
                         name="basic2"
@@ -146,11 +146,11 @@ const Login = () => {
                     >
                         <Form.Item
                             wrapperCol={{
-                                offset: 9,
-                                span: 16,
+                                offset: 13,
+                                span: 12,
                             }}
                         >
-                            <Button type="primary" style={{ background: "green", borderColor: "yellow" }} htmlType="submit" >
+                            <Button type="primary" style={{background:'#68D120'}} htmlType="submit" >
                                 Create Store
                             </Button>
                         </Form.Item>
@@ -158,7 +158,7 @@ const Login = () => {
                     </Form>
                 </Col>
 
-                <Col className="gutter-row" span={6}>
+                <Col className="gutter-row" lg={{ span: 9, offset: 1 }}>
                     <Form
                         name="basic3"
                         labelCol={{ span: 8, }}
