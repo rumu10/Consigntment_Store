@@ -66,10 +66,14 @@ const Customer = () => {
             dataIndex: '',
             key: 'x',
 <<<<<<< HEAD
+<<<<<<< HEAD
             render: () => <Button type="primary">Buy Computer</Button>,
 =======
             render: () => <Button >Buy Computer</Button>,
 >>>>>>> 9a36be3 (	modified:   README.md)
+=======
+            render: () => <Button type="primary">Buy Computer</Button>,
+>>>>>>> f23b9f8 (	modified:   frontend/src/Components/Customer/Customer.jsx)
         },
 
     ];
