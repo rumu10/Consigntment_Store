@@ -15,7 +15,10 @@ const Customer = () => {
         console.log('Success:', values);
     };
 
+<<<<<<< HEAD
     const PriceOption = ['$2,001 or more', '$1,501 - $2,000', '$1,001 - $1,500', '$501 - $1000', '$500 or less']
+=======
+>>>>>>> 9a36be3 (	modified:   README.md)
     const MemoryOption = ["32 GB or more", "16 GB", "8 GB", "4 GB or less"]
     const StorageSizeOption = ["2 TB or more", "1 TB", "512 GB", "256 GB or less"]
     const ProcessorsOption = ["All Intel Processors", "All AMD Processors"]
@@ -62,7 +65,11 @@ const Customer = () => {
             width: '25%',
             dataIndex: '',
             key: 'x',
+<<<<<<< HEAD
             render: () => <Button type="primary">Buy Computer</Button>,
+=======
+            render: () => <Button >Buy Computer</Button>,
+>>>>>>> 9a36be3 (	modified:   README.md)
         },
 
     ];
@@ -90,6 +97,7 @@ const Customer = () => {
 
                         <h2 style={{ textAlign: 'center' }}>Find Computers</h2>
 
+<<<<<<< HEAD
                         <Form.Item
                             name="price"
                             label="Price"
@@ -105,6 +113,8 @@ const Customer = () => {
                             >
                             </Select>
                         </Form.Item>
+=======
+>>>>>>> 9a36be3 (	modified:   README.md)
 
                         <Form.Item
                             name="memory"
@@ -188,8 +198,22 @@ const Customer = () => {
 
 
 
+<<<<<<< HEAD
 
 
+=======
+                        <Form.Item
+                            name="price"
+                            label="Price"
+                            rules={[
+                                {
+                                    required: true,
+                                },
+                            ]}
+                        >
+                            <Input />
+                        </Form.Item>
+>>>>>>> 9a36be3 (	modified:   README.md)
 
 
 
@@ -207,7 +231,11 @@ const Customer = () => {
                     <Table dataSource={dataSource} columns={columns} />
                 </Col>
 
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> 9a36be3 (	modified:   README.md)
                 <Col className="gutter-row" lg={{ span: 5, offset: 1 }}>
                     <Button type="primary" block onClick={onSignOut}>
                         SignOut
