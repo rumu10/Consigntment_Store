@@ -61,7 +61,7 @@ const StoreOwner = () => {
             width: '25%',
             dataIndex: '',
             key: 'x',
-            render: () => <Button type="primary" danger >Remove Computer</Button>,
+            render: () => <Button type="primary" htmlType='submit'>Remove Computer</Button>,
         },
 
     ];
