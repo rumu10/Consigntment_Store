@@ -315,30 +315,6 @@ app.delete('/computers/:computerId', (req, res) => {
 
 
 
-app.post('/computers', (req, res) => {
-    const computerData = req.body;
-    pool.getConnection((err, connection) => {
-        if (err) {
-            console.error('Database connection error:', err);
-            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
-            return;
-        }
-        const query = 'INSERT INTO computers SET ?';
-        connection.query(query, computerData, (err) => {
-            connection.release();
-            if (err) {
-                console.error('Database query error:', err);
-                res.status(500).send({ status: 'error', message: 'Failed to add computer to the database.' });
-                return;
-            }
-            res.send({ status: 'success', message: 'Computer added successfully.' });
-        });
-    });
-});
-
-
-
-
 
 // Report total inventory in amount in entire site
 app.get('/siteInventory', (req, res) => {
@@ -387,29 +363,6 @@ app.get('/siteBalance', (req, res) => {
             }
 
             res.send({ status: 'success', siteBalance: results[0]["siteBalance"] });
-        });
-    });
-});
-
-
-
-app.post('/computers', (req, res) => {
-    const computerData = req.body;
-    pool.getConnection((err, connection) => {
-        if (err) {
-            console.error('Database connection error:', err);
-            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
-            return;
-        }
-        const query = 'INSERT INTO computers SET ?';
-        connection.query(query, computerData, (err) => {
-            connection.release();
-            if (err) {
-                console.error('Database query error:', err);
-                res.status(500).send({ status: 'error', message: 'Failed to add computer to the database.' });
-                return;
-            }
-            res.send({ status: 'success', message: 'Computer added successfully.' });
         });
     });
 });
