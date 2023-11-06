@@ -1,38 +1,50 @@
 import React from 'react';
-import { Button, Row, Col, Form, Input } from 'antd';
+import { Button, Row, Col, Form, Input, Flex, Alert } from 'antd';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { API_ENDPOINT } from '../../config';
 
 const Login = () => {
+
     const navigate = useNavigate();
+    const [formInstance] = Form.useForm();
 
-    const onFinish_SiteManager = async (values) => {
+    const onLogin = async (userType) => {
 
-        console.log('Success for site manager:', values);
-        try {
-            const { data } = await axios.post(`${API_ENDPOINT}login`, values);
-            console.log(data)
+        const values = formInstance.getFieldsValue();
 
-            navigate("/site-manager-view")
-        } catch (e) {
-            console.log(e);
+        console.log('Success for site manager:', values, userType);
+
+        if (userType == 'site') {
+            try {
+                const { data } = await axios.post(`${API_ENDPOINT}login-site-manager`, values);
+                console.log(data)
+                if (data) {
+                    navigate(`/site-manager-view/${data?.data?.manager_id}`)
+                 
+                } else {
+                    console.log("eerrrr login site manager")
+                }
+
+            } catch (e) {
+                console.log(e);
+            }
+        } else if (userType == 'store') {
+            try {
+                const { data } = await axios.post(`${API_ENDPOINT}login`, values);
+                console.log(data)
+                if (data) {
+                    navigate("/store-view")
+                } else {
+                    console.log("eerrrr login store owner")
+                }
+
+            } catch (e) {
+                console.log(e);
+            }
         }
-        navigate("/site-manager-view")
     };
 
-    const onFinish_StoreOwner = async (values) => {
-        console.log('Success for store owner:', values);
-        try {
-            const { data } = await axios.post(`${API_ENDPOINT}login`, values);
-            console.log(data)
-
-            navigate("/store-view")
-        } catch (e) {
-            console.log(e);
-        }
-        navigate("/store-view")
-    };
 
     const onFinish_Customer = async (values) => {
 
@@ -56,61 +68,11 @@ const Login = () => {
 
     return (
         <div className='loginPage'>
-            <h2 style={{ textAlign: 'center' }}>Welcome to Consignment Store</h2>
+            <h2 style={{ textAlign: 'center' }}>Welcome to Our Consignment Store</h2>
             <br />
             <br />
             <Row>
-                <Col className="gutter-row" span={9}>
-                    <Form
-                        name="basic"
-                        labelCol={{ span: 8, }}
-                        wrapperCol={{ span: 16, }}
-                        style={{
-                            maxWidth: 600, marginTop: "50px"
-                        }}
-                        onFinish={onFinish_SiteManager}
-                        autoComplete="off"
-                    >
-                        <Form.Item
-                            label="Administrator"
-                            name="adminEmail"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Please input your email!',
-                                },
-                            ]}
-                        >
-                            <Input />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Password"
-                            name="password"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Please input your password!',
-                                },
-                            ]}
-                        >
-                            <Input.Password />
-                        </Form.Item>
-
-
-                        <Form.Item
-                            wrapperCol={{
-                                offset: 8,
-                                span: 16,
-                            }}
-                        >
-                            <Button type="primary" name="SiteManager" htmlType="submit">
-                                Log in as Site Manager
-                            </Button>
-                        </Form.Item>
-
-                    </Form>
-
+                <Col className="gutter-row" lg={{ span: 9, offset: 3 }}>
                     <Form
                         name="siteOwnerLogin"
                         labelCol={{ span: 8, }}
@@ -118,7 +80,8 @@ const Login = () => {
                         style={{
                             maxWidth: 600, marginTop: "50px"
                         }}
-                        onFinish={onFinish_StoreOwner}
+                        // onFinish={onLogin}
+                        form={formInstance}
                         autoComplete="off"
                     >
                         <Form.Item
@@ -147,35 +110,48 @@ const Login = () => {
                             <Input.Password />
                         </Form.Item>
 
+                        <Flex gap="small" wrap="wrap" style={{ marginLeft: '150px' }}>
+                            <Form.Item
+                                wrapperCol={{
+                                    offset: 8,
+                                    span: 16,
+                                }}
+                            >
+                                <Button type="primary" name="SiteManager" htmlType="submit" onClick={e => onLogin('site')}>
+                                    Log in as Site Owner
+                                </Button>
+                            </Form.Item>
+                            <Form.Item
+                                wrapperCol={{
+                                    offset: 8,
+                                    span: 16,
+                                }}
+                            >
+                                <Button type="primary" name="Store" htmlType="submit" onClick={e => onLogin('store')}>
+                                    Log in as Store Owner
+                                </Button>
+                            </Form.Item>
+                        </Flex>
 
-                        <Form.Item
-                            wrapperCol={{
-                                offset: 8,
-                                span: 16,
-                            }}
-                        >
-                            <Button type="primary" name="SiteManager" htmlType="submit">
-                                Log in as Site Owner
-                            </Button>
-                        </Form.Item>
                     </Form>
-
+                    <h4 style={{ marginLeft: '150px' }}>Are you a new store owner that needs to be registered? Click create store below!</h4>
+                    <br />
                     <Form
                         name="basic2"
 
                         onFinish={onFinish_CreateStore}
                         autoComplete="off"
                     >
-                        {<Form.Item
+                        <Form.Item
                             wrapperCol={{
-                                offset: 8,
+                                offset: 9,
                                 span: 16,
                             }}
                         >
                             <Button type="primary" style={{ background: "green", borderColor: "yellow" }} htmlType="submit" >
-                                Click to Create Store
+                                Create Store
                             </Button>
-                        </Form.Item>}
+                        </Form.Item>
 
                     </Form>
                 </Col>
