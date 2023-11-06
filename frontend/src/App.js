@@ -13,7 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/store-view" element={<StoreOwner />} />
+      <Route path="/store-view/:id" element={<StoreOwner />} />
         <Route path="/site-manager-view/:id" element={<SiteManager />} />
         <Route path="/customer-view" element={<Customer />} />
         <Route path="/create-store" element={<CreateStore />}/>
