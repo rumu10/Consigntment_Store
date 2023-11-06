@@ -3,6 +3,7 @@ import { Button, Row, Col, Form, Input, Flex, Alert } from 'antd';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { API_ENDPOINT } from '../../config';
+import CustomNotification from '../../Util/Notification/Notification';
 
 const Login = () => {
 
@@ -21,7 +22,7 @@ const Login = () => {
                 console.log(data)
                 if (data) {
                     navigate(`/site-manager-view/${data?.data?.manager_id}`)
-                 
+                    CustomNotification("Done!", "Login Successful", "success");
                 } else {
                     console.log("eerrrr login site manager")
                 }
@@ -31,12 +32,13 @@ const Login = () => {
             }
         } else if (userType == 'store') {
             try {
-                const { data } = await axios.post(`${API_ENDPOINT}login`, values);
+                const { data } = await axios.post(`${API_ENDPOINT}login-store-owner`, values);
                 console.log(data)
                 if (data) {
-                    navigate("/store-view")
+                    navigate(`/store-view/${data?.data?.store_id}`)
+                    CustomNotification("Done!", "Login Successful", "success");
                 } else {
-                    console.log("eerrrr login store owner")
+                    console.log("eerrrr login site manager")
                 }
 
             } catch (e) {

@@ -44,6 +44,33 @@ app.post('/login-site-manager', (req, res) => {
     });
 });
 
+app.post('/login-store-owner', (req, res) => {
+    const ownerData = req.body;
+    console.log(ownerData)
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Database connection error:', err);
+            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
+            return;
+        }
+
+        const userData = `select * from storeowners where email = '${ownerData.email}' `;
+        connection.query(userData, async (err, results) => {
+            connection.release();
+            if (err) {
+                console.error('Database query error:', err);
+                res.status(500).send({ status: 'error', message: 'Failed to add store to the database.' });
+                return;
+            }
+
+            const isEqual = await bcrypt.compare(ownerData.password, results[0].password_hash);
+            if (isEqual) {
+                res.send({ status: 'success', message: 'Login successfully.', data: results[0] });
+            }
+        });
+    });
+});
+
 app.get('/managers', (req, res) => {
     const managerId = req.query.managerId;
 
@@ -147,8 +174,13 @@ app.get('/stores', (req, res) => {
 
 
 
-app.post('/stores', (req, res) => {
+app.post('/create-stores', async (req, res) => {
+    const HashedPass = await bcrypt.hash(req.body.password_hash, 12);
+    console.log(HashedPass)
+    req.body.passwordHash = HashedPass;
+    console.log(req.body)
     const storeData = new Store(req.body).toDatabase();
+
     pool.getConnection((err, connection) => {
         if (err) {
             console.error('Database connection error:', err);
