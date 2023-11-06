@@ -53,7 +53,6 @@ const Login = () => {
         console.log('Success for customer:', values);
         try {
             const { data } = await axios.post(`${API_ENDPOINT}login`, values);
-            console.log(data)
 
             navigate("/customer-view")
         } catch (e) {
@@ -136,7 +135,7 @@ const Login = () => {
                         </Flex>
 
                     </Form>
-                    <h4 style={{ marginLeft: '180px' }}>Are you a new store owner that needs to be registered? Click create store below!</h4>
+                    <h4 style={{ marginLeft: '120px' }}>Are you a new store owner that needs to be registered? Click create store below!</h4>
                     <br />
                     <Form
                         name="basic2"
@@ -146,7 +145,7 @@ const Login = () => {
                     >
                         <Form.Item
                             wrapperCol={{
-                                offset: 13,
+                                offset: 10,
                                 span: 12,
                             }}
                         >

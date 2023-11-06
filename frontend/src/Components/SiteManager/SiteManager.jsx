@@ -31,7 +31,6 @@ const SiteManager = () => {
         setLoading(true);
         try {
             const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=`);
-            console.log(data);
             if (data) {
                 let tabledata = data?.stores?.map((el, i) => {
                     return {
@@ -43,12 +42,13 @@ const SiteManager = () => {
                 setStoreList(tabledata);
                 setStoreBalanceList(tabledata);
                 setStoreInventoryList(tabledata);
-                fetchTotal();
                 setLoading(false);
 
             } else {
                 console.log("eerrrr login site manager")
             }
+
+            fetchTotal();
 
         } catch (e) {
             console.log(e);
@@ -58,7 +58,6 @@ const SiteManager = () => {
     const fetchTotal = async () => {
         try {
             const { data } = await axios.get(`${API_ENDPOINT}managers`);
-            console.log(data);
             if (data) {
                 setTotalInventory(data?.totals[0].total_inventory);
                 setTotalbalance(data?.totals[0].total_balance);
