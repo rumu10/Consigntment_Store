@@ -1,8 +1,11 @@
-import { Row, Col, Table, Button, Spin } from 'antd'
+import { Row, Col, Table, Button, Spin, Modal } from 'antd'
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from 'axios';
 import { API_ENDPOINT } from '../../config';
+
+const { confirm } = Modal;
 
 const SiteManager = () => {
 
@@ -77,7 +80,7 @@ const SiteManager = () => {
             key: 'name',
         },
         {
-            title: 'Inventory',
+            title: 'Inventory($$)',
             dataIndex: 'inventory',
             key: 'age',
         },
@@ -91,7 +94,7 @@ const SiteManager = () => {
             key: 'name',
         },
         {
-            title: 'Balance',
+            title: 'Balance($$)',
             dataIndex: 'balance',
             key: 'age',
         },
@@ -124,21 +127,32 @@ const SiteManager = () => {
     ];
 
     const onRemoveStore = async (record) => {
-        var store_id = record.storeId
-        try {
-            const { data } = await axios.delete(`${API_ENDPOINT}stores/${store_id}`);
-            console.log(data);
-            if (data) {
-                fetchStores();
-
-            } else {
-                console.log("eerrrr login site managerrrr")
-            }
-
-        } catch (e) {
-            console.log(e);
-        }
-    }
+        confirm({
+            title: 'Do you want to delete this store?',
+            icon: <ExclamationCircleOutlined />,
+            // content: 'When clicked the OK button, this dialog will be closed after 1 second',
+            okText: 'Yes',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk: async () => {
+                var store_id = record.storeId
+                try {
+                    const { data } = await axios.delete(`${API_ENDPOINT}stores/${store_id}`);
+                    console.log(data);
+                    if (data) {
+                        fetchStores();
+        
+                    } else {
+                        console.log("eerrrr login site managerrrr")
+                    }
+        
+                } catch (e) {
+                    console.log(e);
+                }
+            },
+            onCancel() { },
+        });
+    };
 
     const onSignOut = () => {
         navigate('/login')
@@ -166,11 +180,11 @@ const SiteManager = () => {
                         </Button>
                         <h2 style={{ textAlign: 'center', marginTop: '70px', fontSize: '14px' }}>Total Inventory:</h2>
                         <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '24px' }}>
-                            {totalInventory.toFixed(2)}
+                            ${totalInventory.toFixed(2)}
                         </div>
                         <h2 style={{ textAlign: 'center', marginTop: '70px', fontSize: '14px' }}>Total Balance:</h2>
                         <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '24px' }}>
-                            {totalBalance.toFixed(2)}
+                            ${totalBalance.toFixed(2)}
                         </div>
                     </Col>
                 </Row>

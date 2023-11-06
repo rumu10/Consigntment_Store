@@ -84,8 +84,8 @@ app.get('/managers', (req, res) => {
         let managerQuery = `
             SELECT 
                 s.manager_id,
-                COALESCE(SUM(CASE WHEN c.status = 1 THEN c.price ELSE 0 END), 0) AS total_inventory,
-                COALESCE(SUM(CASE WHEN c.status = 0 THEN c.price * 0.95 ELSE 0 END), 0) AS total_balance
+                COALESCE(SUM(CASE WHEN c.status = 0 THEN c.price ELSE 0 END), 0) AS total_inventory,
+                COALESCE(SUM(CASE WHEN c.status = 1 THEN c.price * 0.95 ELSE 0 END), 0) AS total_balance
             FROM 
                 storeowners s
             LEFT JOIN 
@@ -135,8 +135,8 @@ app.get('/stores', (req, res) => {
                 s.store_name,
                 s.longitude,
                 s.latitude,
-                COALESCE(SUM(CASE WHEN c.status = 1 THEN c.price ELSE 0 END), 0) AS inventory,
-                COALESCE(SUM(CASE WHEN c.status = 0 THEN c.price * 0.95 ELSE 0 END), 0) AS balance
+                COALESCE(SUM(CASE WHEN c.status = 0 THEN c.price ELSE 0 END), 0) AS inventory,
+                COALESCE(SUM(CASE WHEN c.status = 1 THEN c.price * 0.95 ELSE 0 END), 0) AS balance
             FROM 
                 storeowners s
             LEFT JOIN 
@@ -235,13 +235,13 @@ app.get('/computers', (req, res) => {
         }
         let query = 'SELECT * FROM computers';
         const queryParams = [];
-        if (computerId) {
-            query += ' WHERE computer_id = ?';
-            queryParams.push(computerId);
-        }
+        // if (computerId) {
+        //     query += ' WHERE computer_id = ?';
+        //     queryParams.push(computerId);
+        // }
 
         if (storeId) {
-            query += ' WHERE store_id = ?';
+            query += ' WHERE store_id = ? and status = 0';
             queryParams.push(storeId);
         }
 
@@ -255,17 +255,19 @@ app.get('/computers', (req, res) => {
             }
             const computers = results.map(data => Computer.fromDatabase(data));
 
-            const balance = 0.95 * results.reduce((acc, curr) => curr.status === 0 ? acc + curr.price : acc, 0);
+            const balance = 0.95 * results.reduce((acc, curr) => curr.status === 1 ? acc + curr.price : acc, 0);
 
-            const inventory = results.reduce((acc, curr) => curr.status === 1 ? acc + curr.price : acc, 0);
+            const inventory = results.reduce((acc, curr) => curr.status === 0 ? acc + curr.price : acc, 0);
 
             res.send({ status: 'success', computers: computers, balance: balance, inventory: inventory });
         });
     });
 });
 
-app.post('/computers', (req, res) => {
+app.post('/add-computers', (req, res) => {
     const computerData = new Computer(req.body).toDatabase();
+
+    console.log(computerData)
     pool.getConnection((err, connection) => {
         if (err) {
             console.error('Database connection error:', err);
@@ -343,65 +345,6 @@ app.delete('/computers/:computerId', (req, res) => {
         });
     });
 });
-
-
-
-
-
-// Report total inventory in amount in entire site
-app.get('/siteInventory', (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) {
-            console.error('Database connection error:', err);
-            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
-            return;
-        }
-
-
-        const query = 'SELECT sum(price) as siteInventory FROM computers where status = 1';
-        connection.query(query, (err, results) => {
-            connection.release();
-
-            if (err) {
-                console.error('Database query error:', err);
-                res.status(500).send({ status: 'error', message: 'Failed to fetch the computer list from the database.' });
-                return;
-            }
-            
-            
-            res.send({ status: 'success', siteInventory: results[0]["siteInventory"]});
-        });
-    });
-});
-
-// Report total balance in amount in entire site
-app.get('/siteBalance', (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) {
-            console.error('Database connection error:', err);
-            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
-            return;
-        }
-
-
-        const query = 'SELECT sum(price)*0.95 as siteBalance FROM computers where status = 0';
-        connection.query(query, (err, results) => {
-            connection.release();
-
-            if (err) {
-                console.error('Database query error:', err);
-                res.status(500).send({ status: 'error', message: 'Failed to fetch the computer list from the database.' });
-                return;
-            }
-
-            res.send({ status: 'success', siteBalance: results[0]["siteBalance"] });
-        });
-    });
-});
-
-
-
-
 
 // Report total inventory in amount in entire site
 app.get('/siteInventory', (req, res) => {
