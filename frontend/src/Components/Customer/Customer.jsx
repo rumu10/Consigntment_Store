@@ -15,6 +15,7 @@ const Customer = () => {
         console.log('Success:', values);
     };
 
+    const PriceOption = ['$2,001 or more', '$1,501 - $2,000', '$1,001 - $1,500', '$501 - $1000', '$500 or less']
     const MemoryOption = ["32 GB or more", "16 GB", "8 GB", "4 GB or less"]
     const StorageSizeOption = ["2 TB or more", "1 TB", "512 GB", "256 GB or less"]
     const ProcessorsOption = ["All Intel Processors", "All AMD Processors"]
@@ -89,6 +90,21 @@ const Customer = () => {
 
                         <h2 style={{ textAlign: 'center' }}>Find Computers</h2>
 
+                        <Form.Item
+                            name="price"
+                            label="Price"
+                            rules={[
+                                {
+                                    required: true,
+                                },
+                            ]}
+                        >
+                            <Select
+                                allowClear
+                                options={PriceOption.map((size) => ({ label: size, value: size }))}
+                            >
+                            </Select>
+                        </Form.Item>
 
                         <Form.Item
                             name="memory"
@@ -172,17 +188,8 @@ const Customer = () => {
 
 
 
-                        <Form.Item
-                            name="price"
-                            label="Price"
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
-                        >
-                            <Input />
-                        </Form.Item>
+
+
 
 
 
@@ -200,7 +207,7 @@ const Customer = () => {
                     <Table dataSource={dataSource} columns={columns} />
                 </Col>
 
-                
+
                 <Col className="gutter-row" lg={{ span: 5, offset: 1 }}>
                     <Button type="primary" block onClick={onSignOut}>
                         SignOut
