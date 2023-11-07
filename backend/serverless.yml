@@ -1,4 +1,3 @@
-
 service: backend
 frameworkVersion: "3"
 
@@ -6,10 +5,10 @@ provider:
   name: aws
   runtime: nodejs16.x
   environment:
-    DB_HOST: groupdb.cxihxkjcod9w.us-east-1.rds.amazonaws.com 
-    DB_USER: adminDB 
+    DB_HOST: groupdb.cxihxkjcod9w.us-east-1.rds.amazonaws.com
+    DB_USER: adminDB
     DB_PASSWORD: AD#CS509
-    DB_NAME: consignment 
+    DB_NAME: consignment
 
 functions:
   app:
@@ -18,11 +17,30 @@ functions:
       - http:
           path: /
           method: ANY
-          cors: true
+          cors:
+            origin: '*' # Allows access from any origin
+            headers: # Specify which headers are allowed in requests
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false # If your client doesn't need to pass authentication headers
       - http:
           path: '{proxy+}'
           method: ANY
-          cors: true
+          cors:
+            origin: '*' # Allows access from any origin
+            headers: # Specify which headers are allowed in requests
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - Access-Control-Allow-Origin
+            allowCredentials: false # If your client doesn't need to pass authentication headers
     vpc:
       securityGroupIds:
         - sg-0dcd396a0440dd091
@@ -30,11 +48,14 @@ functions:
         - subnet-07906e38adaa5584b
         - subnet-0caea60a84e35cfd6
         - subnet-096337045e4e29952
-        - subnet-02cfbab578f6ef115 
-        - subnet-09f8aa91f27f654c9 
-        - subnet-06b77cb5c9c45233a 
+        - subnet-02cfbab578f6ef115
+        - subnet-09f8aa91f27f654c9
+        - subnet-06b77cb5c9c45233a
+
 plugins:
   - serverless-offline
+
 custom:
   serverless-offline:
     httpPort: 4000
+

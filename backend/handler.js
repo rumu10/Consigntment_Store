@@ -4,6 +4,7 @@ const express = require('express');
 const mysql = require('mysql');
 const serverlessHttp = require('serverless-http');
 const bcrypt = require('bcryptjs');
+const cors = require('cors');
 
 const app = express();
 
@@ -16,6 +17,11 @@ const dbConfig = {
 };
 const pool = mysql.createPool(dbConfig);
 app.use(express.json());
+app.use(cors({
+  origin: 'http://makalu-frontend.s3-website-us-east-1.amazonaws.com', // This is your frontend's URL
+  methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
+  credentials: true,
+}));
 
 app.post('/login-site-manager', (req, res) => {
     const managerData = req.body;
