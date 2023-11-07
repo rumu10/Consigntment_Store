@@ -15,6 +15,7 @@ const StoreOwner = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [computerList, setComputerList] = useState(false);
+    const [storeName, setStoreName] = useState(id);
 
     const [totalInventory, setTotalInventory] = useState(0);
     const [totalBalance, setTotalbalance] = useState(0);
@@ -123,8 +124,27 @@ const StoreOwner = () => {
 
         console.log(id);
         fetchComputers();
+        fetchStoreName();
+
 
     }, []);
+
+    const fetchStoreName = async () => {
+        setLoading(true);
+        try {
+            const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=${id}`);
+            if (data) {
+                setStoreName(data.stores[0].storeName)
+            } else {
+                setStoreName(id)
+                console.log("Errrr: Fetch store information error.")
+            }
+
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
     const fetchComputers = async () => {
         setLoading(true);
@@ -143,7 +163,6 @@ const StoreOwner = () => {
                 setTotalInventory(data?.inventory);
                 setTotalbalance(data?.balance);
                 setLoading(false);
-
             } else {
                 console.log("eerrrr login site manager")
             }
@@ -184,7 +203,7 @@ const StoreOwner = () => {
             <div className='store-owner' style={{ margin: '30px' }}>
                 <Row>
                     <Col className="gutter-row" lg={{ span: 5, offset: 0 }}>
-                        <h2 style={{ textAlign: 'center' }}>Add Computer to store</h2>
+                        <h2 style={{ textAlign: 'center' }}>Add Computer to: {storeName}</h2>
                         <Form
                             name="basic"
                             labelCol={{ span: 8, }}
