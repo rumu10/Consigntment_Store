@@ -1,5 +1,9 @@
 # Consingmet store
 
+## Link to the deployed website
+
+[http://makalu-frontend.s3-website-us-east-1.amazonaws.com/l](http://makalu-frontend.s3-website-us-east-1.amazonaws.com/l)
+
 ## How to run the app 
 
 First, you need to install the requirements for the project.
@@ -16,6 +20,11 @@ npm install
 cd frontend
 npm install
 cd ..
+```
+### Deploy frontend
+You'll need to follow the instruction inside the backend serverless config. Once you have your credentials, and installed the credentials run:
+```bash
+npm run build
 ```
 
 ### Backend requirements
