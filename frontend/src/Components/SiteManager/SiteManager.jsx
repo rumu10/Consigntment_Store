@@ -140,11 +140,11 @@ const SiteManager = () => {
                     console.log(data);
                     if (data) {
                         fetchStores();
-        
+
                     } else {
                         console.log("eerrrr login site managerrrr")
                     }
-        
+
                 } catch (e) {
                     console.log(e);
                 }
@@ -163,15 +163,15 @@ const SiteManager = () => {
                 <Row>
                     <Col className="gutter-row" lg={{ span: 5, offset: 0 }}>
                         <h2 style={{ textAlign: 'center' }}>Store List</h2>
-                        <Table dataSource={storeList} columns={columns} />;
+                        <Table dataSource={storeList} columns={columns} />
                     </Col>
                     <Col className="gutter-row" lg={{ span: 5, offset: 1 }}>
                         <h2 style={{ textAlign: 'center' }}>Store Balance</h2>
-                        <Table dataSource={storeBalanceList} columns={columnsB} />;
+                        <Table dataSource={storeBalanceList} columns={columnsB} />
                     </Col>
                     <Col className="gutter-row" lg={{ span: 5, offset: 1 }}>
                         <h2 style={{ textAlign: 'center' }}>Store Inventory</h2>
-                        <Table dataSource={storeIncentoryList} columns={columnsI} />;
+                        <Table dataSource={storeIncentoryList} columns={columnsI} />
                     </Col>
                     <Col className="gutter-row" lg={{ span: 4, offset: 1 }}>
                         <Button type="primary" block onClick={onSignOut}>
