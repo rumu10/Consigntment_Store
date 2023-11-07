@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "react-scripts start",
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && serverless client deploy",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -38,5 +38,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "serverless-finch": "^4.0.3"
   }
 }

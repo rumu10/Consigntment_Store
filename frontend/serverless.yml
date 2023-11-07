@@ -5,14 +5,14 @@ provider:
   region: us-east-1 # Choose your preferred AWS region
 
 plugins:
-  - serverless-finch # This plugin is used to deploy static website
+  - serverless-finch # This plugin is used to deploy static websites
 
 custom:
   client:
     bucketName: makalu-frontend
     distributionFolder: build # The folder where your build static files are
-    # Uncomment the next line if you want to make your site indexable by search engines
-    # indexDocument: index.html
+    indexDocument: index.html
+    errorDocument: index.html
 
 package:
   individually: true
@@ -20,7 +20,6 @@ package:
     - node_modules/**
     - source/**
 
-# Assuming you don't have other functions and resources defined for simplicity
 functions: {}
 
 resources:
@@ -29,6 +28,15 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.client.bucketName}
+        WebsiteConfiguration:
+          RoutingRules:
+            - RoutingRule:
+                Condition:
+                  HttpErrorCodeReturnedEquals: "404"
+                Redirect:
+                  HttpRedirectCode: "200"
+                  Protocol: "http"
+                  ReplaceKeyPrefixWith: "#!/"
         CorsConfiguration:
           CorsRules:
             - AllowedHeaders: ["*"]
@@ -39,5 +47,4 @@ resources:
               AllowedMethods: ["GET"]
               AllowedOrigins: ["*"]
               MaxAgeSeconds: 3000
-
 
