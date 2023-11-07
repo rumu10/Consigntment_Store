@@ -1,0 +1,43 @@
+service: frontend
+
+provider:
+  name: aws
+  region: us-east-1 # Choose your preferred AWS region
+
+plugins:
+  - serverless-finch # This plugin is used to deploy static website
+
+custom:
+  client:
+    bucketName: makalu-frontend
+    distributionFolder: build # The folder where your build static files are
+    # Uncomment the next line if you want to make your site indexable by search engines
+    # indexDocument: index.html
+
+package:
+  individually: true
+  exclude:
+    - node_modules/**
+    - source/**
+
+# Assuming you don't have other functions and resources defined for simplicity
+functions: {}
+
+resources:
+  Resources:
+    MakaluFrontendBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.client.bucketName}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ["*"]
+              AllowedMethods: ["PUT", "POST", "DELETE"]
+              AllowedOrigins: ["https://7pvpeztz21.execute-api.us-east-1.amazonaws.com"]
+              MaxAgeSeconds: 3000
+            - AllowedHeaders: ["*"]
+              AllowedMethods: ["GET"]
+              AllowedOrigins: ["*"]
+              MaxAgeSeconds: 3000
+
+
