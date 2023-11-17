@@ -61,51 +61,80 @@ const Customer = () => {
     // computer list
     // todo: currently these are mocked computer list data, we need to query these data from the database
     const dataSource = [
+
         {
             key: '1',
-            computerName: 'Computer 1',
-            storeName: 'Store 3',
-            conf: '32GB, 1TB, 12th Gen Intel i9, NVIDIA GeForce RTX 4090',
-            p: 499.99
-
-        },
-        {
-            key: '2',
             computerName: 'Computer 2',
             storeName: 'Store 4',
-            conf: '8GB, 1TB, 11th Gen Intel i9, NVIDIA GeForce RTX 4080',
-            p: 329.99
+            memory: '8GB',
+            storageSize: '1TB',
+            processors: 'Intel i9',
+            processGenerations: "12th Gen Intel",
+            graphics: 'NVIDIA GeForce RTX 4080',
+
+            price: 329.99,
+            cost: 1,
 
         },
     ];
 
     const columns = [
         {
-            title: 'Computer',
+            title: 'Model Name',
             dataIndex: 'computerName',
             key: 'name',
-            width: '25%'
+
         },
         {
             title: 'Store',
             dataIndex: 'storeName',
             key: 'name',
-            width: '25%'
+
+        },
+        {
+            title: 'Memory',
+            dataIndex: 'memory',
+            key: 'name',
+
+        },
+        {
+            title: 'Storage',
+            dataIndex: 'storageSize',
+            key: 'name',
+
+        },
+        {
+            title: 'Processor',
+            dataIndex: 'processors',
+            key: 'name',
+
+        },
+        {
+            title: 'Generations',
+            dataIndex: 'processGenerations',
+            key: 'name',
+
+        },
+        {
+            title: 'Graphics',
+            dataIndex: 'graphics',
+            key: 'name',
+
         },
 
-        {
-            title: 'Configuration',
-            dataIndex: 'conf',
-            key: 'name',
-            width: '25%'
-        },
         {
             title: 'Price',
-            dataIndex: 'p',
+            dataIndex: 'price',
             key: 'name',
-            width: '25%'
+
         },
 
+        {
+            title: 'Shipping Cost($0.03/mile)',
+            dataIndex: 'cost',
+            key: 'name',
+
+        },
 
     ];
 
