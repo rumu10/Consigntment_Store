@@ -90,6 +90,7 @@ app.get('/managers', (req, res) => {
         let managerQuery = `
             SELECT 
                 s.manager_id,
+                s.manager_balance AS managerBalance,
                 COALESCE(SUM(CASE WHEN c.status = 0 THEN c.price ELSE 0 END), 0) AS total_inventory,
                 COALESCE(SUM(CASE WHEN c.status = 1 THEN c.price * 0.95 ELSE 0 END), 0) AS total_balance
             FROM 
@@ -342,14 +343,21 @@ app.delete('/computers/:computerId', (req, res) => {
 
         updateManagerBalance(1,25,connection);
         
-        const query = 'DELETE FROM computers WHERE computer_id = ?';
-        connection.query(query, [computerId], (err) => {
+        const query = 'UPDATE computers SET status = ? WHERE computer_id = ?';
+        //set the computer status value = 2
+        connection.query(query, [2, computerId], (err, result) => {
             connection.release();
             if (err) {
                 console.error('Database query error:', err);
                 res.status(500).send({ status: 'error', message: 'Failed to delete computer from the database.' });
                 return;
             }
+
+            if (result.affectedRows === 0) {
+                res.status(404).send({ status: 'error', message: 'Computer with the given ID not found.' });
+                return;
+            }
+
             res.send({ status: 'success', message: 'Computer deleted successfully.' });
         });
     });
@@ -412,9 +420,7 @@ function updateManagerBalance(managerId, amount, connection) {
     connection.query(updateBalanceQuery, [amount, managerId], (err, result) => {
         if (err) {
             console.error('Failed to update manager balance:', err);
-            // handle error
         }
-        // handle success
     });
 }
 
