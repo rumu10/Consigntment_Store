@@ -339,6 +339,9 @@ app.delete('/computers/:computerId', (req, res) => {
             res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
             return;
         }
+
+        updateManagerBalance(1,25,connection);
+        
         const query = 'DELETE FROM computers WHERE computer_id = ?';
         connection.query(query, [computerId], (err) => {
             connection.release();
@@ -404,10 +407,15 @@ app.get('/siteBalance', (req, res) => {
 });
 
 
-function handleErrorAndRespond(connection, err, res, customMessage) {
-    connection.release();
-    console.error('Database query error:', err);
-    res.status(500).send({ status: 'error', message: customMessage });
+function updateManagerBalance(managerId, amount, connection) {
+    const updateBalanceQuery = 'UPDATE manager SET manager_balance = manager_balance + ? WHERE manager_id = ?';
+    connection.query(updateBalanceQuery, [amount, managerId], (err, result) => {
+        if (err) {
+            console.error('Failed to update manager balance:', err);
+            // handle error
+        }
+        // handle success
+    });
 }
 
 app.post('/test', (req, res) => {
