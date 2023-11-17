@@ -152,11 +152,11 @@ const Customer = () => {
     const storeData = [
         {
             key: "1",
-            name: "Store 1",
+            name: "Boston store",
         },
         {
             key: "2",
-            name: "Store 2",
+            name: "Worcester store",
         },
         {
             key: "3",
@@ -293,13 +293,39 @@ const Customer = () => {
                             </Select>
                         </Form.Item>
 
-                        <Form.Item >
+                        <Form.Item style={{ textAlign: 'center' }}>
                             <Button type="primary" htmlType="submit" >
                                 Find Computers
                             </Button>
                         </Form.Item>
 
                     </Form>
+
+
+                    <Form style={{ textAlign: 'center' }}
+                        name="storeList"
+                        onFinish={onFinish}
+                        //labelCol={{ span: 8 }}
+                        wrapperCol={{ span: 16 }}
+                        layout={'Horizontal'}
+                    //style={{ maxWidth: 200 }}
+                    >
+
+                        <h2 style={{ textAlign: 'center' }}>Store List by distance</h2>
+                        <Form.Item style={{ textAlign: 'center' }} name="selectedStores" >
+                            <Checkbox.Group style={{ width: 150 }} options={storeData.map((p) => ({ label: p.name, value: p.key }))}>
+                            </Checkbox.Group>
+                        </Form.Item>
+                        <Form.Item label=" " colon={false} style={{ textAlign: 'center' }}>
+                            <Button type="primary" htmlType="submit">
+                                Generate Inventory
+                            </Button>
+                        </Form.Item>
+
+
+
+                    </Form>
+
 
                 </Col>
                 <Col className="gutter-row" lg={{ span: 8, offset: 1 }}>
@@ -346,34 +372,6 @@ const Customer = () => {
                         SignOut
                     </Button>
                     <Divider />
-
-
-
-
-                    <Form
-                        name="storeList"
-                        onFinish={onFinish}
-                        labelCol={{ span: 8 }}
-                        wrapperCol={{ span: 16 }}
-                        layout={'vertical'}
-                        style={{ maxWidth: 600 }}
-                    >
-
-                        <h2 style={{ textAlign: 'center' }}>Store List by distance</h2>
-                        <Form.Item name="selectedStores" wrapperCol={{ span: 8 }}>
-                            <Checkbox.Group options={storeData.map((p) => ({ label: p.name, value: p.key }))}>
-                            </Checkbox.Group>
-                        </Form.Item>
-                        <Form.Item label=" " colon={false}>
-                            <Button type="primary" htmlType="submit">
-                                Generate Inventory
-                            </Button>
-                        </Form.Item>
-
-
-
-                    </Form>
-
 
                 </Col>
             </Row>
