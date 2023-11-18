@@ -22,8 +22,9 @@ const Customer = () => {
         // currently, even if multiples are selected, only the first store will be processed
         let selected = values.selectedStores[0];
         let storeId = storeList[selected].store.storeId;
+        let distance = storeList[selected].distance;
         //console.log('selected store has storeId:', storeId);
-        fetchComputers(storeId);
+        fetchComputers(storeId, distance);
     };
 
     const onChange_StoreSelection = (e) => {
@@ -63,7 +64,7 @@ const Customer = () => {
         }
     }
 
-    const fetchComputers = async (storeId) => {
+    const fetchComputers = async (storeId, distance) => {
         try {
             const { data } = await axios.get(`${API_ENDPOINT}computers?storeId=${storeId}`);
             console.log(data);
@@ -72,7 +73,8 @@ const Customer = () => {
                     return {
                         ...el,
                         storeName: await fetchStoreName(storeId),
-                        key: i + 1
+                        cost: (distance * 0.03).toFixed(2),
+                        key: i
                     }
                 }))
                 setComputerList(tabledata);
@@ -201,7 +203,7 @@ const Customer = () => {
         },
 
         {
-            title: 'Price',
+            title: 'Price ($)',
             dataIndex: 'price',
             key: 'name',
 
