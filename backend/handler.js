@@ -416,13 +416,20 @@ app.get('/siteBalance', (req, res) => {
 
 
 function updateManagerBalance(managerId, amount, connection) {
-    const updateBalanceQuery = 'UPDATE manager SET manager_balance = manager_balance + ? WHERE manager_id = ?';
+    const updateBalanceQuery = 'UPDATE manager SET manager_balance = COALESCE(manager_balance, 0) + ? WHERE manager_id = ?';
+
+    // Log the query and its parameters for debugging
+    console.log('Executing SQL:', updateBalanceQuery, 'Parameters:', [amount, managerId]);
+
     connection.query(updateBalanceQuery, [amount, managerId], (err, result) => {
         if (err) {
             console.error('Failed to update manager balance:', err);
+        } else {
+            console.log('Update successful:', result);
         }
     });
 }
+
 
 app.post('/test', (req, res) => {
     const body = req.body;
