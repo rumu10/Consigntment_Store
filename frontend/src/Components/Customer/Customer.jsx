@@ -1,25 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { getDistance, orderByDistance } from "geolib"
-import { Button, Row, Col, Form, Input, InputNumber, Table, Select, Checkbox, Divider, Flex, Space } from 'antd';
+import { Button, Row, Col, Form, Table, Select, Checkbox, Divider, Flex, Space } from 'antd';
 import { useNavigate, useParams } from "react-router-dom";
 import axios from 'axios';
 import { API_ENDPOINT } from '../../config';
 
-const Customer = (data) => {
+const Customer = () => {
 
     const navigate = useNavigate();
     const { lat, long } = useParams();
     const [storeList, setStoreList] = useState([]);
+    const [computerList, setComputerList] = useState(false);
 
-    //const [storeList, setStoreList] = useState([]);
     const onFinish_filterComputer = (values) => {
         console.log("filter the features:", values);
         // todo: add logic to add computer to the databas
     }
     const onFinish = (values) => {
-        console.log('Success:', values.selectedStores);
-        // todo: add logic to generate inventory for these selected stores
+        //console.log('Success:', values.selectedStores);
+        // todo: make it support multiple stoes selection
+        // currently, even if multiples are selected, only the first store will be processed
+        let selected = values.selectedStores[0];
+        let storeId = storeList[selected].store.storeId;
+        //console.log('selected store has storeId:', storeId);
+        fetchComputers(storeId);
     };
+
+    const onChange_StoreSelection = (e) => {
+        return e.target.value;
+    }
 
     useEffect(() => {
         fetchStores();
@@ -41,11 +50,10 @@ const Customer = (data) => {
                 let tabledata = stores.map((el, i) => {
                     return {
                         store: el,
-                        key: i + 1,
+                        key: i,
                         distance: computeDistance(lat, long, el.latitude, el.longitude) // in miles
                     }
                 })
-
                 setStoreList(tabledata);
                 console.log(data.stores);
             }
@@ -55,10 +63,40 @@ const Customer = (data) => {
         }
     }
 
+    const fetchComputers = async (storeId) => {
+        try {
+            const { data } = await axios.get(`${API_ENDPOINT}computers?storeId=${storeId}`);
+            console.log(data);
+            if (data) {
+                let tabledata = await Promise.all(data?.computers?.map(async (el, i) => {
+                    return {
+                        ...el,
+                        storeName: await fetchStoreName(storeId),
+                        key: i + 1
+                    }
+                }))
+                setComputerList(tabledata);
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
 
+    const fetchStoreName = async (storeId) => {
+        try {
+            const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=${storeId}`);
+            if (data) {
+                return (data.stores[0].storeName)
+            }
+        } catch (e) {
+            return storeId;
+            console.log(e);
+        }
+    }
 
     const [computerSelected] = Form.useForm();
-    //computerSelected.setFieldsValue({item: dataSource})
+    //computerSelected.setFieldsValue({item: computerList})
 
     const tableRowSelection = {
         onChange: (selectedRowKeys, selectedRows) => {
@@ -98,25 +136,25 @@ const Customer = (data) => {
     const GraphicsOption = ["All NVIDIA Graphics", "All AMD Graphics", "All Intel Graphics"]
 
 
-    // computer list
-    // todo: currently these are mocked computer list data, we need to query these data from the database
-    const dataSource = [
-
-        {
-            key: '1',
-            computerName: 'Computer 2',
-            storeName: 'Store 4',
-            memory: '8GB',
-            storageSize: '1TB',
-            processors: 'Intel i9',
-            processGenerations: "12th Gen Intel",
-            graphics: 'NVIDIA GeForce RTX 4080',
-
-            price: 329.99,
-            cost: 1,
-
-        },
-    ];
+    //    // computer list
+    //    // todo: currently these are mocked computer list data, we need to query these data from the database
+    //    const computerList = [
+    //
+    //        {
+    //            key: '1',
+    //            computerName: 'Computer 2',
+    //            storeName: 'Store 4',
+    //            memory: '8GB',
+    //            storageSize: '1TB',
+    //            processors: 'Intel i9',
+    //            processGenerations: "12th Gen Intel",
+    //            graphics: 'NVIDIA GeForce RTX 4080',
+    //
+    //            price: 329.99,
+    //            cost: 1,
+    //
+    //        },
+    //    ];
 
     const columns = [
         {
@@ -178,45 +216,14 @@ const Customer = (data) => {
 
     ];
 
-    const storeColumns = [
-        {
-            title: "Name",
-            dataIndex: "name",
-            render: (text) => <a href="#">{text}</a>
-        },
-
-    ];
-
-    //    // store list
-    //    // todo: currently these are mocked store list data, we need to query these data from the database
-
-    //        const storeList = [
-    //            {
-    //                key: "1",
-    //                name: "Boston store",
-    //            },
-    //            {
-    //                key: "2",
-    //                name: "Worcester store",
-    //            },
-    //            {
-    //                key: "3",
-    //                name: "Store 3",
-    //            },
-    //            {
-    //                key: "4",
-    //                name: "Store 4",
-    //            },
-    //            {
-    //                key: "5",
-    //                name: "Store 5",
-    //            },
-    //            {
-    //                key: "6",
-    //                name: "Store 6",
-    //            },
-    //        ]
-
+    //    const storeColumns = [
+    //        {
+    //            title: "Name",
+    //            dataIndex: "name",
+    //            render: (text) => <a href="#">{text}</a>
+    //        },
+    //
+    //    ];
 
     return (
         <div className='customer' style={{ margin: '30px' }}>
@@ -338,7 +345,6 @@ const Customer = (data) => {
                                 Find Computers
                             </Button>
                         </Form.Item>
-
                     </Form>
 
 
@@ -361,22 +367,15 @@ const Customer = (data) => {
                                 Generate Inventory
                             </Button>
                         </Form.Item>
-
-
-
                     </Form>
-
 
                 </Col>
                 <Col className="gutter-row" lg={{ span: 8, offset: 1 }}>
                     <h2 style={{ textAlign: 'center' }}>Computer List</h2>
 
-
-
-
                     <Form form={computerSelected}>
                         <Form.Item name="selectedComputerKey">
-                            <Table rowSelection={tableRowSelection} rowKey={(dataSource) => dataSource.key} dataSource={dataSource} columns={columns} />
+                            <Table rowSelection={tableRowSelection} rowKey={(computerList) => computerList.key} dataSource={computerList} columns={columns} />
                         </Form.Item>
 
                         <Flex gap="small" wrap="wrap" style={{ marginLeft: '150px' }}>
