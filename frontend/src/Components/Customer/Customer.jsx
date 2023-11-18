@@ -1,13 +1,17 @@
-import React from 'react'
+import React, { useEffect, useState } from "react";
+import { getDistance, orderByDistance } from "geolib"
 import { Button, Row, Col, Form, Input, InputNumber, Table, Select, Checkbox, Divider, Flex, Space } from 'antd';
 import { useNavigate, useParams } from "react-router-dom";
-
+import axios from 'axios';
+import { API_ENDPOINT } from '../../config';
 
 const Customer = (data) => {
 
     const navigate = useNavigate();
     const { lat, long } = useParams();
+    const [storeList, setStoreList] = useState([]);
 
+    //const [storeList, setStoreList] = useState([]);
     const onFinish_filterComputer = (values) => {
         console.log("filter the features:", values);
         // todo: add logic to add computer to the databas
@@ -16,6 +20,41 @@ const Customer = (data) => {
         console.log('Success:', values.selectedStores);
         // todo: add logic to generate inventory for these selected stores
     };
+
+    useEffect(() => {
+        fetchStores();
+    }, []);
+
+    const computeDistance = (lat1, long1, lat2, long2) => {
+        let d = getDistance({ latitude: lat1, longitude: long1 },
+            { latitude: lat2, longitude: long2 })  // in meter
+        return d * 0.000621371; // convert to miles
+    };
+
+    const fetchStores = async () => {
+        try {
+            const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=`);
+            console.log(data)
+            if (data) {
+                let stores = data.stores;
+                stores = orderByDistance({ latitude: lat, longitude: long }, stores);
+                let tabledata = stores.map((el, i) => {
+                    return {
+                        store: el,
+                        key: i + 1,
+                        distance: computeDistance(lat, long, el.latitude, el.longitude) // in miles
+                    }
+                })
+
+                setStoreList(tabledata);
+                console.log(data.stores);
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
 
 
     const [computerSelected] = Form.useForm();
@@ -148,34 +187,35 @@ const Customer = (data) => {
 
     ];
 
-    // store list
-    // todo: currently these are mocked store list data, we need to query these data from the database
-    const storeData = [
-        {
-            key: "1",
-            name: "Boston store",
-        },
-        {
-            key: "2",
-            name: "Worcester store",
-        },
-        {
-            key: "3",
-            name: "Store 3",
-        },
-        {
-            key: "4",
-            name: "Store 4",
-        },
-        {
-            key: "5",
-            name: "Store 5",
-        },
-        {
-            key: "6",
-            name: "Store 6",
-        },
-    ]
+    //    // store list
+    //    // todo: currently these are mocked store list data, we need to query these data from the database
+
+    //        const storeList = [
+    //            {
+    //                key: "1",
+    //                name: "Boston store",
+    //            },
+    //            {
+    //                key: "2",
+    //                name: "Worcester store",
+    //            },
+    //            {
+    //                key: "3",
+    //                name: "Store 3",
+    //            },
+    //            {
+    //                key: "4",
+    //                name: "Store 4",
+    //            },
+    //            {
+    //                key: "5",
+    //                name: "Store 5",
+    //            },
+    //            {
+    //                key: "6",
+    //                name: "Store 6",
+    //            },
+    //        ]
 
 
     return (
@@ -311,9 +351,9 @@ const Customer = (data) => {
                     //style={{ maxWidth: 200 }}
                     >
 
-                        <h2 style={{ textAlign: 'center' }}>Store List by distance</h2>
+                        <h2 style={{ textAlign: 'center' }}>Store List by distance (miles) </h2>
                         <Form.Item style={{ textAlign: 'center' }} name="selectedStores" >
-                            <Checkbox.Group style={{ width: 150 }} options={storeData.map((p) => ({ label: p.name, value: p.key }))}>
+                            <Checkbox.Group style={{ width: 250 }} options={storeList.map((p) => ({ label: p.store.storeName.concat(',', p.distance.toFixed(2)), value: p.key }))}>
                             </Checkbox.Group>
                         </Form.Item>
                         <Form.Item label=" " colon={false} style={{ textAlign: 'center' }}>
