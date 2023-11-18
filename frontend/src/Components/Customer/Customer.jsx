@@ -1,11 +1,12 @@
 import React from 'react'
 import { Button, Row, Col, Form, Input, InputNumber, Table, Select, Checkbox, Divider, Flex, Space } from 'antd';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 
-const Customer = () => {
+const Customer = (data) => {
 
     const navigate = useNavigate();
+    const { lat, long } = useParams();
 
     const onFinish_filterComputer = (values) => {
         console.log("filter the features:", values);
@@ -177,10 +178,9 @@ const Customer = () => {
     ]
 
 
-
-
     return (
         <div className='customer' style={{ margin: '30px' }}>
+
             <Row>
                 <Col className="gutter-row" lg={{ span: 7, offset: 0 }}>
 

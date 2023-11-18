@@ -52,13 +52,11 @@ const Login = () => {
 
         console.log('Success for customer:', values);
         try {
-            const { data } = await axios.post(`${API_ENDPOINT}login`, values);
-
-            navigate("/customer-view")
+            //const { data } = await axios.post(`${API_ENDPOINT}login`, values);
+            navigate(`/customer-view/${values.lat}/${values.long}`)
         } catch (e) {
             console.log(e);
         }
-        navigate("/customer-view")
     };
 
     const onFinish_CreateStore = async (values) => {
@@ -149,7 +147,7 @@ const Login = () => {
                                 span: 12,
                             }}
                         >
-                            <Button type="primary" style={{background:'#68D120'}} htmlType="submit" >
+                            <Button type="primary" style={{ background: '#68D120' }} htmlType="submit" >
                                 Create Store
                             </Button>
                         </Form.Item>
