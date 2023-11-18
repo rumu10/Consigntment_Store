@@ -11,7 +11,7 @@
   "scripts": {
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "deploy:backend": "cd backend && npm run deploy",
     "deploy:frontend": "cd frontend && npm run deploy",
     "deploy": "concurrently \"npm run deploy:backend\" \"npm run deploy:frontend\""
