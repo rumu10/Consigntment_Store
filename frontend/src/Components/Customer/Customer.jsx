@@ -16,20 +16,6 @@ const Customer = () => {
         console.log("filter the features:", values);
         // todo: add logic to add computer to the databas
     }
-    const onFinish = (values) => {
-        //console.log('Success:', values.selectedStores);
-        // todo: make it support multiple stoes selection
-        // currently, even if multiples are selected, only the first store will be processed
-        let selected = values.selectedStores[0];
-        let storeId = storeList[selected].store.storeId;
-        let distance = storeList[selected].distance;
-        //console.log('selected store has storeId:', storeId);
-        fetchComputers(storeId, distance);
-    };
-
-    const onChange_StoreSelection = (e) => {
-        return e.target.value;
-    }
 
     useEffect(() => {
         fetchStores();
@@ -44,7 +30,7 @@ const Customer = () => {
     const fetchStores = async () => {
         try {
             const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=`);
-            console.log(data)
+            //console.log(data)
             if (data) {
                 let stores = data.stores;
                 stores = orderByDistance({ latitude: lat, longitude: long }, stores);
@@ -56,7 +42,7 @@ const Customer = () => {
                     }
                 })
                 setStoreList(tabledata);
-                console.log(data.stores);
+                //console.log(data.stores);
             }
         }
         catch (e) {
@@ -64,37 +50,49 @@ const Customer = () => {
         }
     }
 
-    const fetchComputers = async (storeId, distance) => {
+    const fetchComputerForStoreId = async (selectionId) => {
+        let storeId = storeList[selectionId].store.storeId;
+        const { data } = await axios.get(`${API_ENDPOINT}computers?storeId=${storeId}`);
+        if (data) {
+            let tabledata = data.computers.map((el) => {
+                return {
+                    ...el,
+                    selectionId: selectionId
+                }
+            })
+            return tabledata;
+        }
+    }
+
+    const fetchComputers = async (values) => {
+        //console.log('Success:', values.selectedStores);
+        let selected = values.selectedStores;
+
         try {
-            const { data } = await axios.get(`${API_ENDPOINT}computers?storeId=${storeId}`);
-            console.log(data);
-            if (data) {
-                let tabledata = await Promise.all(data?.computers?.map(async (el, i) => {
+            let allComputers = await Promise.all(selected.map(async (id) => {
+                return (await fetchComputerForStoreId(id));
+            }))
+            if (allComputers) {
+                let computers = allComputers.flat();
+                //console.log(computers);
+                let tabledata = computers.map((el, i) => {
+                    let selected = el.selectionId
                     return {
                         ...el,
-                        storeName: await fetchStoreName(storeId),
-                        cost: (distance * 0.03).toFixed(2),
+                        storeName: storeList[selected].store.storeName,
+                        cost: (storeList[selected].distance * 0.03).toFixed(2),
                         key: i
                     }
-                }))
+                })
+                //console.log('tabledata:', tabledata)
                 setComputerList(tabledata);
             }
         }
-        catch (e) {
-            console.log(e);
-        }
-    }
+        catch {
+            console.log("Error when fetching computer information.")
 
-    const fetchStoreName = async (storeId) => {
-        try {
-            const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=${storeId}`);
-            if (data) {
-                return (data.stores[0].storeName)
-            }
-        } catch (e) {
-            return storeId;
-            console.log(e);
         }
+
     }
 
     const [computerSelected] = Form.useForm();
@@ -217,15 +215,6 @@ const Customer = () => {
         },
 
     ];
-
-    //    const storeColumns = [
-    //        {
-    //            title: "Name",
-    //            dataIndex: "name",
-    //            render: (text) => <a href="#">{text}</a>
-    //        },
-    //
-    //    ];
 
     return (
         <div className='customer' style={{ margin: '30px' }}>
@@ -352,7 +341,7 @@ const Customer = () => {
 
                     <Form style={{ textAlign: 'center' }}
                         name="storeList"
-                        onFinish={onFinish}
+                        onFinish={fetchComputers}
                         //labelCol={{ span: 8 }}
                         wrapperCol={{ span: 16 }}
                         layout={'Horizontal'}
