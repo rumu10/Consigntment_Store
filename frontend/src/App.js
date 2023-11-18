@@ -16,7 +16,7 @@ function App() {
 
       <Route path="/store-view/:id" element={<StoreOwner />} />
         <Route path="/site-manager-view/:id" element={<SiteManager />} />
-        <Route path="/customer-view" element={<Customer />} />
+        <Route path="/customer-view/:lat/:long" element={<Customer />} />
         <Route path="/create-store" element={<CreateStore />}/>
       </Routes>
 
