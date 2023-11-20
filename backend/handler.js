@@ -90,13 +90,15 @@ app.get('/managers', (req, res) => {
         let managerQuery = `
             SELECT 
                 s.manager_id,
-                s.manager_balance AS managerBalance,
+                m.manager_balance AS manager_balance,
                 COALESCE(SUM(CASE WHEN c.status = 0 THEN c.price ELSE 0 END), 0) AS total_inventory,
                 COALESCE(SUM(CASE WHEN c.status = 1 THEN c.price * 0.95 ELSE 0 END), 0) AS total_balance
             FROM 
                 storeowners s
             LEFT JOIN 
                 computers c ON s.store_id = c.store_id
+            LEFT JOIN
+            manager m ON s.manager_id = m.manager_id
         `;
 
         const queryParams = [];
