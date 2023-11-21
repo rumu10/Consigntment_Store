@@ -77,6 +77,43 @@ app.post('/login-store-owner', (req, res) => {
     });
 });
 
+app.get('/managerBalance', (req, res) => {
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Database connection error:', err);
+            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
+            return;
+        }
+
+        const balanceQuery = `
+            SELECT 
+                m.manager_id,
+                m.manager_balance
+            FROM 
+                manager m
+        `;
+
+        connection.query(balanceQuery, (err, results) => {
+            connection.release();
+
+            if (err) {
+                console.error('Database error:', err);
+                res.status(500).send({ status: 'error', message: 'Failed to fetch manager balance from the database.' });
+                return;
+            }
+
+            if (results.length === 0) {
+                res.send({ status: 'error', message: 'Manager not found.' });
+            } else {
+                res.send({ status: 'success', balance: results[0] });
+            }
+        });
+    });
+});
+
+
+
 app.get('/managers', (req, res) => {
     const managerId = req.query.managerId;
 
@@ -90,15 +127,12 @@ app.get('/managers', (req, res) => {
         let managerQuery = `
             SELECT 
                 s.manager_id,
-                m.manager_balance AS manager_balance,
                 COALESCE(SUM(CASE WHEN c.status = 0 THEN c.price ELSE 0 END), 0) AS total_inventory,
                 COALESCE(SUM(CASE WHEN c.status = 1 THEN c.price * 0.95 ELSE 0 END), 0) AS total_balance
             FROM 
                 storeowners s
             LEFT JOIN 
                 computers c ON s.store_id = c.store_id
-            LEFT JOIN
-            manager m ON s.manager_id = m.manager_id
         `;
 
         const queryParams = [];
