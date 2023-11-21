@@ -220,7 +220,7 @@ const Customer = () => {
         <div className='customer' style={{ margin: '30px' }}>
 
             <Row>
-                <Col className="gutter-row" lg={{ span: 7, offset: 0 }}>
+                <Col className="gutter-row" lg={{ span: 6, offset: 0 }}>
 
                     <Form
                         name="basic"

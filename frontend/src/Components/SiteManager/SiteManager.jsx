@@ -25,8 +25,28 @@ const SiteManager = () => {
 
         console.log(id);
         fetchStores();
+        fetchManagerBalance();
 
     }, []);
+
+    const fetchManagerBalance = async () => {
+        try {
+            const { data } = await axios.get(`${API_ENDPOINT}managerBalance`);
+            console.log(data)
+            if (data) {
+                setManagerbalance(data?.balance?.manager_balance);
+                setLoading(false);
+
+            } else {
+                setManagerbalance(0);
+                setLoading(false);
+            }
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
 
     const fetchStores = async () => {
         setLoading(true);
@@ -57,19 +77,16 @@ const SiteManager = () => {
     }
 
     const fetchTotal = async () => {
-        console.log('total')
         try {
             const { data } = await axios.get(`${API_ENDPOINT}managers`);
             if (data.totals.length > 0) {
                 setTotalInventory(data?.totals[0].total_inventory);
                 setTotalbalance(data?.totals[0].total_balance);
-                setManagerbalance(data?.totals[0].manager_balance);
                 setLoading(false);
 
             } else {
                 setTotalInventory(0);
                 setTotalbalance(0);
-                setManagerbalance(0);
                 setLoading(false);
             }
 
