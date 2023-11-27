@@ -17,7 +17,8 @@
   "scripts": {
     "dev": "react-scripts start",
     "start": "react-scripts start",
-    "build": "react-scripts build && serverless client deploy --yes",
+    "build": "react-scripts build && yes Y | serverless client deploy",
+    "deploy": "react-scripts build && yes Y | serverless client deploy --y",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
