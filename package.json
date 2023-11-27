@@ -15,6 +15,7 @@
     "install:backend": "cd backend && npm install",
     "install:frontend": "cd frontend && npm install",
     "install": "concurrently  \"npm run install:backend\" \"npm run install:frontend\"",
+
     "deploy:backend": "cd backend && npm run deploy",
     "deploy:frontend": "cd frontend && npm run deploy",
     "deploy": "concurrently \"npm run deploy:backend\" \"npm run deploy:frontend\""

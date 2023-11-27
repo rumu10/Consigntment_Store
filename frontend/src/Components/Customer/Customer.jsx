@@ -1,24 +1,102 @@
-import React from 'react'
-import { Button, Row, Col, Form, Input, InputNumber, Table, Select, Checkbox, Divider, Flex, Space } from 'antd';
-import { useNavigate } from "react-router-dom";
-
+import React, { useEffect, useState } from "react";
+import { getDistance, orderByDistance } from "geolib"
+import { Button, Row, Col, Form, Table, Select, Checkbox, Divider, Flex, Space } from 'antd';
+import { useNavigate, useParams } from "react-router-dom";
+import axios from 'axios';
+import { API_ENDPOINT } from '../../config';
 
 const Customer = () => {
 
     const navigate = useNavigate();
+    const { lat, long } = useParams();
+    const [storeList, setStoreList] = useState([]);
+    const [computerList, setComputerList] = useState(false);
 
     const onFinish_filterComputer = (values) => {
         console.log("filter the features:", values);
         // todo: add logic to add computer to the databas
     }
-    const onFinish = (values) => {
-        console.log('Success:', values.selectedStores);
-        // todo: add logic to generate inventory for these selected stores
+
+    useEffect(() => {
+        fetchStores();
+    }, []);
+
+    const computeDistance = (lat1, long1, lat2, long2) => {
+        let d = getDistance({ latitude: lat1, longitude: long1 },
+            { latitude: lat2, longitude: long2 })  // in meter
+        return d * 0.000621371; // convert to miles
     };
 
+    const fetchStores = async () => {
+        try {
+            const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=`);
+            //console.log(data)
+            if (data) {
+                let stores = data.stores;
+                stores = orderByDistance({ latitude: lat, longitude: long }, stores);
+                let tabledata = stores.map((el, i) => {
+                    return {
+                        store: el,
+                        key: i,
+                        distance: computeDistance(lat, long, el.latitude, el.longitude) // in miles
+                    }
+                })
+                setStoreList(tabledata);
+                //console.log(data.stores);
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
+    const fetchComputerForStoreId = async (selectionId) => {
+        let storeId = storeList[selectionId].store.storeId;
+        const { data } = await axios.get(`${API_ENDPOINT}computers?storeId=${storeId}`);
+        if (data) {
+            let tabledata = data.computers.map((el) => {
+                return {
+                    ...el,
+                    selectionId: selectionId
+                }
+            })
+            return tabledata;
+        }
+    }
+
+    const fetchComputers = async (values) => {
+        //console.log('Success:', values.selectedStores);
+        let selected = values.selectedStores;
+
+        try {
+            let allComputers = await Promise.all(selected.map(async (id) => {
+                return (await fetchComputerForStoreId(id));
+            }))
+            if (allComputers) {
+                let computers = allComputers.flat();
+                //console.log(computers);
+                let tabledata = computers.map((el, i) => {
+                    let selected = el.selectionId
+                    return {
+                        ...el,
+                        storeName: storeList[selected].store.storeName,
+                        cost: (storeList[selected].distance * 0.03).toFixed(2),
+                        key: i
+                    }
+                })
+                //console.log('tabledata:', tabledata)
+                setComputerList(tabledata);
+            }
+        }
+        catch {
+            console.log("Error when fetching computer information.")
+
+        }
+
+    }
 
     const [computerSelected] = Form.useForm();
-    //computerSelected.setFieldsValue({item: dataSource})
+    //computerSelected.setFieldsValue({item: computerList})
 
     const tableRowSelection = {
         onChange: (selectedRowKeys, selectedRows) => {
@@ -58,102 +136,91 @@ const Customer = () => {
     const GraphicsOption = ["All NVIDIA Graphics", "All AMD Graphics", "All Intel Graphics"]
 
 
-    // computer list
-    // todo: currently these are mocked computer list data, we need to query these data from the database
-    const dataSource = [
-        {
-            key: '1',
-            computerName: 'Computer 1',
-            storeName: 'Store 3',
-            conf: '32GB, 1TB, 12th Gen Intel i9, NVIDIA GeForce RTX 4090',
-            p: 499.99
-
-        },
-        {
-            key: '2',
-            computerName: 'Computer 2',
-            storeName: 'Store 4',
-            conf: '8GB, 1TB, 11th Gen Intel i9, NVIDIA GeForce RTX 4080',
-            p: 329.99
-
-        },
-    ];
+    //    // computer list
+    //    // todo: currently these are mocked computer list data, we need to query these data from the database
+    //    const computerList = [
+    //
+    //        {
+    //            key: '1',
+    //            computerName: 'Computer 2',
+    //            storeName: 'Store 4',
+    //            memory: '8GB',
+    //            storageSize: '1TB',
+    //            processors: 'Intel i9',
+    //            processGenerations: "12th Gen Intel",
+    //            graphics: 'NVIDIA GeForce RTX 4080',
+    //
+    //            price: 329.99,
+    //            cost: 1,
+    //
+    //        },
+    //    ];
 
     const columns = [
         {
-            title: 'Computer',
+            title: 'Model Name',
             dataIndex: 'computerName',
             key: 'name',
-            width: '25%'
+
         },
         {
             title: 'Store',
             dataIndex: 'storeName',
             key: 'name',
-            width: '25%'
+
+        },
+        {
+            title: 'Memory',
+            dataIndex: 'memory',
+            key: 'name',
+
+        },
+        {
+            title: 'Storage',
+            dataIndex: 'storageSize',
+            key: 'name',
+
+        },
+        {
+            title: 'Processor',
+            dataIndex: 'processors',
+            key: 'name',
+
+        },
+        {
+            title: 'Generations',
+            dataIndex: 'processGenerations',
+            key: 'name',
+
+        },
+        {
+            title: 'Graphics',
+            dataIndex: 'graphics',
+            key: 'name',
+
         },
 
         {
-            title: 'Configuration',
-            dataIndex: 'conf',
+            title: 'Price ($)',
+            dataIndex: 'price',
             key: 'name',
-            width: '25%'
-        },
-        {
-            title: 'Price',
-            dataIndex: 'p',
-            key: 'name',
-            width: '25%'
+
         },
 
+        {
+            title: 'Shipping Cost($0.03/mile)',
+            dataIndex: 'cost',
+            key: 'name',
+
+        },
 
     ];
-
-    const storeColumns = [
-        {
-            title: "Name",
-            dataIndex: "name",
-            render: (text) => <a href="#">{text}</a>
-        },
-
-    ];
-
-    // store list
-    // todo: currently these are mocked store list data, we need to query these data from the database
-    const storeData = [
-        {
-            key: "1",
-            name: "Store 1",
-        },
-        {
-            key: "2",
-            name: "Store 2",
-        },
-        {
-            key: "3",
-            name: "Store 3",
-        },
-        {
-            key: "4",
-            name: "Store 4",
-        },
-        {
-            key: "5",
-            name: "Store 5",
-        },
-        {
-            key: "6",
-            name: "Store 6",
-        },
-    ]
-
-
-
 
     return (
         <div className='customer' style={{ margin: '30px' }}>
+
             <Row>
-                <Col className="gutter-row" lg={{ span: 7, offset: 0 }}>
+                <Col className="gutter-row" lg={{ span: 6, offset: 0 }}>
 
                     <Form
                         name="basic"
@@ -264,24 +331,42 @@ const Customer = () => {
                             </Select>
                         </Form.Item>
 
-                        <Form.Item >
+                        <Form.Item style={{ textAlign: 'center' }}>
                             <Button type="primary" htmlType="submit" >
                                 Find Computers
                             </Button>
                         </Form.Item>
+                    </Form>
 
+
+                    <Form style={{ textAlign: 'center' }}
+                        name="storeList"
+                        onFinish={fetchComputers}
+                        //labelCol={{ span: 8 }}
+                        wrapperCol={{ span: 16 }}
+                        layout={'Horizontal'}
+                    //style={{ maxWidth: 200 }}
+                    >
+
+                        <h2 style={{ textAlign: 'center' }}>Store List by distance (miles) </h2>
+                        <Form.Item style={{ textAlign: 'center' }} name="selectedStores" >
+                            <Checkbox.Group style={{ width: 250 }} options={storeList.map((p) => ({ label: p.store.storeName.concat(',', p.distance.toFixed(2)), value: p.key }))}>
+                            </Checkbox.Group>
+                        </Form.Item>
+                        <Form.Item label=" " colon={false} style={{ textAlign: 'center' }}>
+                            <Button type="primary" htmlType="submit">
+                                Generate Inventory
+                            </Button>
+                        </Form.Item>
                     </Form>
 
                 </Col>
                 <Col className="gutter-row" lg={{ span: 8, offset: 1 }}>
                     <h2 style={{ textAlign: 'center' }}>Computer List</h2>
 
-
-
-
                     <Form form={computerSelected}>
                         <Form.Item name="selectedComputerKey">
-                            <Table rowSelection={tableRowSelection} rowKey={(dataSource) => dataSource.key} dataSource={dataSource} columns={columns} />
+                            <Table rowSelection={tableRowSelection} rowKey={(computerList) => computerList.key} dataSource={computerList} columns={columns} />
                         </Form.Item>
 
                         <Flex gap="small" wrap="wrap" style={{ marginLeft: '150px' }}>
@@ -317,34 +402,6 @@ const Customer = () => {
                         SignOut
                     </Button>
                     <Divider />
-
-
-
-
-                    <Form
-                        name="storeList"
-                        onFinish={onFinish}
-                        labelCol={{ span: 8 }}
-                        wrapperCol={{ span: 16 }}
-                        layout={'vertical'}
-                        style={{ maxWidth: 600 }}
-                    >
-
-                        <h2 style={{ textAlign: 'center' }}>Store List by distance</h2>
-                        <Form.Item name="selectedStores" wrapperCol={{ span: 8 }}>
-                            <Checkbox.Group options={storeData.map((p) => ({ label: p.name, value: p.key }))}>
-                            </Checkbox.Group>
-                        </Form.Item>
-                        <Form.Item label=" " colon={false}>
-                            <Button type="primary" htmlType="submit">
-                                Generate Inventory
-                            </Button>
-                        </Form.Item>
-
-
-
-                    </Form>
-
 
                 </Col>
             </Row>

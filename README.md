@@ -2,7 +2,7 @@
 
 ## Link to the deployed website
 
-[http://makalu-frontend.s3-website-us-east-1.amazonaws.com/l](http://makalu-frontend.s3-website-us-east-1.amazonaws.com/l)
+[http://makalu-frontend.s3-website-us-east-1.amazonaws.com](http://makalu-frontend.s3-website-us-east-1.amazonaws.com)
 
 ## How to run the app 
 

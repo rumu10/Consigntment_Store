@@ -19,13 +19,34 @@ const SiteManager = () => {
 
     const [totalInventory, setTotalInventory] = useState(0);
     const [totalBalance, setTotalbalance] = useState(0);
+    const [managerBalance, setManagerbalance] = useState(0);
 
     useEffect(() => {
 
         console.log(id);
         fetchStores();
+        fetchManagerBalance();
 
     }, []);
+
+    const fetchManagerBalance = async () => {
+        try {
+            const { data } = await axios.get(`${API_ENDPOINT}managerBalance`);
+            console.log(data)
+            if (data) {
+                setManagerbalance(data?.balance?.manager_balance);
+                setLoading(false);
+
+            } else {
+                setManagerbalance(0);
+                setLoading(false);
+            }
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
 
     const fetchStores = async () => {
         setLoading(true);
@@ -58,13 +79,15 @@ const SiteManager = () => {
     const fetchTotal = async () => {
         try {
             const { data } = await axios.get(`${API_ENDPOINT}managers`);
-            if (data) {
+            if (data.totals.length > 0) {
                 setTotalInventory(data?.totals[0].total_inventory);
                 setTotalbalance(data?.totals[0].total_balance);
                 setLoading(false);
 
             } else {
-                console.log("eerrrr login site manager")
+                setTotalInventory(0);
+                setTotalbalance(0);
+                setLoading(false);
             }
 
         } catch (e) {
@@ -81,7 +104,10 @@ const SiteManager = () => {
         {
             title: 'Inventory($$)',
             dataIndex: 'inventory',
-            key: 'age',
+            key: 'inventory',
+            defaultSortOrder: 'descend',
+            sorter: (a, b) => a.inventory - b.inventory,
+            sortDirections: ['descend', 'ascend', 'descend']
         },
 
     ];
@@ -95,7 +121,10 @@ const SiteManager = () => {
         {
             title: 'Balance($$)',
             dataIndex: 'balance',
-            key: 'age',
+            key: 'balance',
+            defaultSortOrder: 'descend',
+            sorter: (a, b) => a.balance - b.balance,
+            sortDirections: ['descend', 'ascend', 'descend']
         },
 
     ];
@@ -177,13 +206,17 @@ const SiteManager = () => {
                         <Button type="primary" block onClick={onSignOut}>
                             SignOut
                         </Button>
-                        <h2 style={{ textAlign: 'center', marginTop: '70px', fontSize: '14px' }}>Total Inventory:</h2>
+                        <h2 style={{ textAlign: 'center', marginTop: '70px', fontSize: '14px' }}>Total Store Inventory:</h2>
                         <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '24px' }}>
                             ${totalInventory.toFixed(2)}
                         </div>
-                        <h2 style={{ textAlign: 'center', marginTop: '70px', fontSize: '14px' }}>Total Balance:</h2>
+                        <h2 style={{ textAlign: 'center', marginTop: '70px', fontSize: '14px' }}>Total Store Balance:</h2>
                         <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '24px' }}>
                             ${totalBalance.toFixed(2)}
+                        </div>
+                        <h2 style={{ textAlign: 'center', marginTop: '70px', fontSize: '14px' }}>Site Manager Balance:</h2>
+                        <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '24px' }}>
+                            ${managerBalance.toFixed(2)}
                         </div>
                     </Col>
                 </Row>

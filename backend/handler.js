@@ -77,6 +77,43 @@ app.post('/login-store-owner', (req, res) => {
     });
 });
 
+app.get('/managerBalance', (req, res) => {
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Database connection error:', err);
+            res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
+            return;
+        }
+
+        const balanceQuery = `
+            SELECT 
+                m.manager_id,
+                m.manager_balance
+            FROM 
+                manager m
+        `;
+
+        connection.query(balanceQuery, (err, results) => {
+            connection.release();
+
+            if (err) {
+                console.error('Database error:', err);
+                res.status(500).send({ status: 'error', message: 'Failed to fetch manager balance from the database.' });
+                return;
+            }
+
+            if (results.length === 0) {
+                res.send({ status: 'error', message: 'Manager not found.' });
+            } else {
+                res.send({ status: 'success', balance: results[0] });
+            }
+        });
+    });
+});
+
+
+
 app.get('/managers', (req, res) => {
     const managerId = req.query.managerId;
 
@@ -339,14 +376,24 @@ app.delete('/computers/:computerId', (req, res) => {
             res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
             return;
         }
-        const query = 'DELETE FROM computers WHERE computer_id = ?';
-        connection.query(query, [computerId], (err) => {
+
+        updateManagerBalance(1,25,connection);
+        
+        const query = 'UPDATE computers SET status = ? WHERE computer_id = ?';
+        //set the computer status value = 2
+        connection.query(query, [2, computerId], (err, result) => {
             connection.release();
             if (err) {
                 console.error('Database query error:', err);
                 res.status(500).send({ status: 'error', message: 'Failed to delete computer from the database.' });
                 return;
             }
+
+            if (result.affectedRows === 0) {
+                res.status(404).send({ status: 'error', message: 'Computer with the given ID not found.' });
+                return;
+            }
+
             res.send({ status: 'success', message: 'Computer deleted successfully.' });
         });
     });
@@ -404,11 +451,21 @@ app.get('/siteBalance', (req, res) => {
 });
 
 
-function handleErrorAndRespond(connection, err, res, customMessage) {
-    connection.release();
-    console.error('Database query error:', err);
-    res.status(500).send({ status: 'error', message: customMessage });
+function updateManagerBalance(managerId, amount, connection) {
+    const updateBalanceQuery = 'UPDATE manager SET manager_balance = COALESCE(manager_balance, 0) + ? WHERE manager_id = ?';
+
+    // Log the query and its parameters for debugging
+    console.log('Executing SQL:', updateBalanceQuery, 'Parameters:', [amount, managerId]);
+
+    connection.query(updateBalanceQuery, [amount, managerId], (err, result) => {
+        if (err) {
+            console.error('Failed to update manager balance:', err);
+        } else {
+            console.log('Update successful:', result);
+        }
+    });
 }
+
 
 app.post('/test', (req, res) => {
     const body = req.body;
