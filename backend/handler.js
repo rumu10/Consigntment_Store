@@ -160,8 +160,8 @@ app.get('/managers', (req, res) => {
 
 
 app.get('/stores', (req, res) => {
-
     const storeId = req.query.storeId;
+    const sortOrder = req.query.sortOrder || 'asc';  // Default to ascending
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -193,12 +193,14 @@ app.get('/stores', (req, res) => {
             queryParams.push(storeId);
         }
 
-
         if (whereClauses.length) {
             query += ' WHERE ' + whereClauses.join(' AND ');
         }
 
         query += ' GROUP BY s.store_id';
+
+        // Add ORDER BY clause
+        query += ' ORDER BY inventory ' + (sortOrder === 'desc' ? 'DESC' : 'ASC');
 
         connection.query(query, queryParams, (err, results) => {
             connection.release();
@@ -214,6 +216,7 @@ app.get('/stores', (req, res) => {
         });
     });
 });
+
 
 
 
@@ -267,8 +270,14 @@ app.delete('/stores/:store_id', (req, res) => {
 
 app.get('/computers', (req, res) => {
 
-    const computerId = req.query.computerId;
-    const storeId = req.query.storeId;
+    const {
+        price,
+        memory,
+        storageSize,
+        processors,
+        processGenerations,
+        graphics
+    } = req.query;
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -276,17 +285,35 @@ app.get('/computers', (req, res) => {
             res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
             return;
         }
-        let query = 'SELECT * FROM computers';
+        let query = 'SELECT * FROM computers WHERE 1=1 AND status = 0';
         const queryParams = [];
-        // if (computerId) {
-        //     query += ' WHERE computer_id = ?';
-        //     queryParams.push(computerId);
-        // }
-
-        if (storeId) {
-            query += ' WHERE store_id = ? and status = 0';
-            queryParams.push(storeId);
+    
+        // Add filters to the query
+        if (price) {
+            query += ' AND price <= ?';
+            queryParams.push(price);
         }
+        if (memory) {
+            query += ' AND memory = ?';
+            queryParams.push(memory);
+        }
+        if (storageSize) {
+            query += ' AND storage_size = ?';
+            queryParams.push(storageSize);
+        }
+        if (processors) {
+            query += ' AND processors = ?';
+            queryParams.push(processors);
+        }
+        if (processGenerations) {
+            query += ' AND process_generations = ?';
+            queryParams.push(processGenerations);
+        }
+        if (graphics) {
+            query += ' AND graphics = ?';
+            queryParams.push(graphics);
+        }
+
 
         connection.query(query, queryParams, (err, results) => {
             connection.release();
