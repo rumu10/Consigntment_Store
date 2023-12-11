@@ -160,8 +160,8 @@ app.get('/managers', (req, res) => {
 
 
 app.get('/stores', (req, res) => {
-
     const storeId = req.query.storeId;
+    const sortOrder = (req.query.sortOrder || 'asc').toLowerCase();  // Default to ascending
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -193,12 +193,14 @@ app.get('/stores', (req, res) => {
             queryParams.push(storeId);
         }
 
-
         if (whereClauses.length) {
             query += ' WHERE ' + whereClauses.join(' AND ');
         }
 
         query += ' GROUP BY s.store_id';
+
+        // Add ORDER BY clause
+        query += ' ORDER BY inventory ' + (sortOrder === 'desc' ? 'DESC' : 'ASC');
 
         connection.query(query, queryParams, (err, results) => {
             connection.release();
@@ -214,6 +216,7 @@ app.get('/stores', (req, res) => {
         });
     });
 });
+
 
 
 
@@ -267,8 +270,14 @@ app.delete('/stores/:store_id', (req, res) => {
 
 app.get('/computers', (req, res) => {
 
-    const computerId = req.query.computerId;
-    const storeId = req.query.storeId;
+    const {
+        price,
+        memory,
+        storageSize,
+        processors,
+        processGenerations,
+        graphics
+    } = req.query;
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -276,17 +285,101 @@ app.get('/computers', (req, res) => {
             res.status(500).send({ status: 'error', message: 'Failed to connect to the database.' });
             return;
         }
-        let query = 'SELECT * FROM computers';
+        let query = 'SELECT * FROM computers WHERE 1=1 AND status = 0';
         const queryParams = [];
-        // if (computerId) {
-        //     query += ' WHERE computer_id = ?';
-        //     queryParams.push(computerId);
-        // }
-
-        if (storeId) {
-            query += ' WHERE store_id = ? and status = 0';
-            queryParams.push(storeId);
+    
+        // Add filters to the query
+        if (price) {
+            if (price === '$500 or less') {
+                query += ' AND price <= ?';
+                queryParams.push(500);
+            } else if (price === '$501 - $1000') {
+                query += ' AND price BETWEEN ? AND ?';
+                queryParams.push(501, 1000);
+            } else if (price === '$1,001 - $1,500') {
+                query += ' AND price BETWEEN ? AND ?';
+                queryParams.push(1001, 1500);
+            } else if (price === '$1,501 - $2,000') {
+                query += ' AND price BETWEEN ? AND ?';
+                queryParams.push(1501, 2000);
+            } else if (price === '$2,001 or more') {
+                query += ' AND price >= ?';
+                queryParams.push(2001);
+            }
         }
+        
+        if (memory) {
+            switch (memory) {
+                case '4 GB or less':
+                    query += ' AND memory <= ?';
+                    queryParams.push('4 GB');
+                    break;
+                case '8 GB':
+                    query += ' AND memory = ?';
+                    queryParams.push('8 GB');
+                    break;
+                case '16 GB':
+                    query += ' AND memory = ?';
+                    queryParams.push('16 GB');
+                    break;
+                case '32 GB or more':
+                    query += ' AND memory >= ?';
+                    queryParams.push('32 GB');
+                    break;
+            }
+        }
+        
+        if (storageSize) {
+            // Convert human-readable format to bytes if necessary
+            switch (storageSize) {
+                case '256 GB or less':
+                    query += ' AND storage_size <= ?';
+                    queryParams.push('256 GB'); // Or the byte equivalent if stored in bytes
+                    break;
+                case '512 GB':
+                    query += ' AND storage_size = ?';
+                    queryParams.push('512 GB'); // Or the byte equivalent if stored in bytes
+                    break;
+                case '1 TB':
+                    query += ' AND storage_size = ?';
+                    queryParams.push('1 TB'); // Or the byte equivalent if stored in bytes
+                    break;
+                case '2 TB or more':
+                    query += ' AND storage_size >= ?';
+                    queryParams.push('2 TB'); // Or the byte equivalent if stored in bytes
+                    break;
+            }
+        }
+        
+        if (processors) {
+            if (processors === 'All Intel Processors') {
+                query += ' AND processors LIKE ?';
+                queryParams.push('%Intel%');
+            } else if (processors === 'All AMD Processors') {
+                query += ' AND processors LIKE ?';
+                queryParams.push('%AMD%');
+            }
+        }
+        
+        if (processGenerations) {
+            query += ' AND process_generations = ?';
+            queryParams.push(processGenerations);
+        }
+
+        if (graphics) {
+            if (graphics === 'All NVIDIA Graphics') {
+                query += ' AND graphics LIKE ?';
+                queryParams.push('%NVIDIA%');
+            } else if (graphics === 'All AMD Graphics') {
+                query += ' AND graphics LIKE ?';
+                queryParams.push('%AMD%');
+            } else if (graphics === 'All Intel Graphics') {
+                query += ' AND graphics LIKE ?';
+                queryParams.push('%Intel%');
+            }
+        }
+        
+
 
         connection.query(query, queryParams, (err, results) => {
             connection.release();
@@ -330,14 +423,11 @@ app.post('/add-computers', (req, res) => {
     });
 });
 
-app.put('/computers/:computerId/status/:status', (req, res) => {
-    const computerId = req.params.computerId;
-    const status = req.params.status;
+app.put('/update-computer/:computerId', (req, res) => {
+    const computerId = req.params.computerId; 
+    const updateData = new Computer(req.body).toDatabase(); 
 
-    if (typeof status === 'undefined') {
-        res.status(400).send({ status: 'error', message: 'Status field is required in the request body.' });
-        return;
-    }
+    console.log(updateData);
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -346,13 +436,12 @@ app.put('/computers/:computerId/status/:status', (req, res) => {
             return;
         }
 
-        const query = 'UPDATE computers SET status = ? WHERE computer_id = ?';
-        connection.query(query, [status, computerId], (err, result) => {
+        const query = 'UPDATE computers SET ? WHERE computer_id = ?';
+        connection.query(query, [updateData, computerId], (err, result) => {
             connection.release();
-
             if (err) {
                 console.error('Database query error:', err);
-                res.status(500).send({ status: 'error', message: 'Failed to update computer status in the database.' });
+                res.status(500).send({ status: 'error', message: 'Failed to update computer in the database.' });
                 return;
             }
 
@@ -361,10 +450,11 @@ app.put('/computers/:computerId/status/:status', (req, res) => {
                 return;
             }
 
-            res.send({ status: 'success', message: 'Computer status updated successfully.' });
+            res.send({ status: 'success', message: 'Computer updated successfully.' });
         });
     });
 });
+
 
 
 
