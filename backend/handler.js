@@ -330,14 +330,11 @@ app.post('/add-computers', (req, res) => {
     });
 });
 
-app.put('/computers/:computerId/status/:status', (req, res) => {
-    const computerId = req.params.computerId;
-    const status = req.params.status;
+app.put('/update-computer/:computerId', (req, res) => {
+    const computerId = req.params.computerId; 
+    const updateData = new Computer(req.body).toDatabase(); 
 
-    if (typeof status === 'undefined') {
-        res.status(400).send({ status: 'error', message: 'Status field is required in the request body.' });
-        return;
-    }
+    console.log(updateData);
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -346,13 +343,12 @@ app.put('/computers/:computerId/status/:status', (req, res) => {
             return;
         }
 
-        const query = 'UPDATE computers SET status = ? WHERE computer_id = ?';
-        connection.query(query, [status, computerId], (err, result) => {
+        const query = 'UPDATE computers SET ? WHERE computer_id = ?';
+        connection.query(query, [updateData, computerId], (err, result) => {
             connection.release();
-
             if (err) {
                 console.error('Database query error:', err);
-                res.status(500).send({ status: 'error', message: 'Failed to update computer status in the database.' });
+                res.status(500).send({ status: 'error', message: 'Failed to update computer in the database.' });
                 return;
             }
 
@@ -361,10 +357,11 @@ app.put('/computers/:computerId/status/:status', (req, res) => {
                 return;
             }
 
-            res.send({ status: 'success', message: 'Computer status updated successfully.' });
+            res.send({ status: 'success', message: 'Computer updated successfully.' });
         });
     });
 });
+
 
 
 
