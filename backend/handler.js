@@ -161,7 +161,7 @@ app.get('/managers', (req, res) => {
 
 app.get('/stores', (req, res) => {
     const storeId = req.query.storeId;
-    const sortOrder = req.query.sortOrder || 'asc';  // Default to ascending
+    const sortOrder = (req.query.sortOrder || 'asc').toLowerCase();  // Default to ascending
 
     pool.getConnection((err, connection) => {
         if (err) {
