@@ -290,29 +290,95 @@ app.get('/computers', (req, res) => {
     
         // Add filters to the query
         if (price) {
-            query += ' AND price <= ?';
-            queryParams.push(price);
+            if (price === '$500 or less') {
+                query += ' AND price <= ?';
+                queryParams.push(500);
+            } else if (price === '$501 - $1000') {
+                query += ' AND price BETWEEN ? AND ?';
+                queryParams.push(501, 1000);
+            } else if (price === '$1,001 - $1,500') {
+                query += ' AND price BETWEEN ? AND ?';
+                queryParams.push(1001, 1500);
+            } else if (price === '$1,501 - $2,000') {
+                query += ' AND price BETWEEN ? AND ?';
+                queryParams.push(1501, 2000);
+            } else if (price === '$2,001 or more') {
+                query += ' AND price >= ?';
+                queryParams.push(2001);
+            }
         }
+        
         if (memory) {
-            query += ' AND memory = ?';
-            queryParams.push(memory);
+            switch (memory) {
+                case '4 GB or less':
+                    query += ' AND memory <= ?';
+                    queryParams.push('4 GB');
+                    break;
+                case '8 GB':
+                    query += ' AND memory = ?';
+                    queryParams.push('8 GB');
+                    break;
+                case '16 GB':
+                    query += ' AND memory = ?';
+                    queryParams.push('16 GB');
+                    break;
+                case '32 GB or more':
+                    query += ' AND memory >= ?';
+                    queryParams.push('32 GB');
+                    break;
+            }
         }
+        
         if (storageSize) {
-            query += ' AND storage_size = ?';
-            queryParams.push(storageSize);
+            // Convert human-readable format to bytes if necessary
+            switch (storageSize) {
+                case '256 GB or less':
+                    query += ' AND storage_size <= ?';
+                    queryParams.push('256 GB'); // Or the byte equivalent if stored in bytes
+                    break;
+                case '512 GB':
+                    query += ' AND storage_size = ?';
+                    queryParams.push('512 GB'); // Or the byte equivalent if stored in bytes
+                    break;
+                case '1 TB':
+                    query += ' AND storage_size = ?';
+                    queryParams.push('1 TB'); // Or the byte equivalent if stored in bytes
+                    break;
+                case '2 TB or more':
+                    query += ' AND storage_size >= ?';
+                    queryParams.push('2 TB'); // Or the byte equivalent if stored in bytes
+                    break;
+            }
         }
+        
         if (processors) {
-            query += ' AND processors = ?';
-            queryParams.push(processors);
+            if (processors === 'All Intel Processors') {
+                query += ' AND processors LIKE ?';
+                queryParams.push('%Intel%');
+            } else if (processors === 'All AMD Processors') {
+                query += ' AND processors LIKE ?';
+                queryParams.push('%AMD%');
+            }
         }
+        
         if (processGenerations) {
             query += ' AND process_generations = ?';
             queryParams.push(processGenerations);
         }
+
         if (graphics) {
-            query += ' AND graphics = ?';
-            queryParams.push(graphics);
+            if (graphics === 'All NVIDIA Graphics') {
+                query += ' AND graphics LIKE ?';
+                queryParams.push('%NVIDIA%');
+            } else if (graphics === 'All AMD Graphics') {
+                query += ' AND graphics LIKE ?';
+                queryParams.push('%AMD%');
+            } else if (graphics === 'All Intel Graphics') {
+                query += ' AND graphics LIKE ?';
+                queryParams.push('%Intel%');
+            }
         }
+        
 
 
         connection.query(query, queryParams, (err, results) => {
