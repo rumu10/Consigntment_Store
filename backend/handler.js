@@ -424,10 +424,15 @@ app.post('/add-computers', (req, res) => {
 });
 
 app.put('/update-computer/:computerId', (req, res) => {
-    const computerId = req.params.computerId; 
-    const updateData = new Computer(req.body).toDatabase(); 
+    const computerId = req.params.computerId;
+    const updateData = new Computer(req.body).toDatabase();
 
     console.log(updateData);
+
+    const filteredUpdateData = Object.fromEntries(Object.entries(updateData).filter(([key, value]) => value !== undefined));
+
+    console.log(filteredUpdateData);
+
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -436,8 +441,24 @@ app.put('/update-computer/:computerId', (req, res) => {
             return;
         }
 
-        const query = 'UPDATE computers SET ? WHERE computer_id = ?';
-        connection.query(query, [updateData, computerId], (err, result) => {
+        let updateFields = '';
+        Object.keys(filteredUpdateData).forEach((key, index) => {
+            updateFields += `${key} = ?`;
+            if (index < Object.keys(filteredUpdateData).length - 1) {
+                updateFields += ', ';
+            }
+        });
+
+        if (!updateFields) {
+            res.send({ status: 'success', message: 'No fields to update.' });
+            return;
+        }
+
+
+        const query = `UPDATE computers SET ${updateFields} WHERE computer_id = ?`;
+        const queryValues = [...Object.values(filteredUpdateData), computerId];
+
+        connection.query(query, queryValues, (err, result) => {
             connection.release();
             if (err) {
                 console.error('Database query error:', err);
