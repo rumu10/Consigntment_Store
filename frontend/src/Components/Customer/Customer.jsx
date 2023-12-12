@@ -129,7 +129,7 @@ const Customer = () => {
 
     // filter options
     const PriceOption = ['$2,001 or more', '$1,501 - $2,000', '$1,001 - $1,500', '$501 - $1000', '$500 or less']
-    const MemoryOption = ["32 GB or more", "16 GB", "8 GB", "4 GB or less"]
+    const MemoryOption = ["32 GB or more", "12 GB", "16 GB", "8 GB", "4 GB or less"]
     const StorageSizeOption = ["2 TB or more", "1 TB", "512 GB", "256 GB or less"]
     const ProcessorsOption = ["All Intel Processors", "All AMD Processors"]
     const ProcessGenerationsOption = ["13th Gen Intel", "12th Gen Intel", "11th Gen Intel", "AMD Ryzen 7000 Series", "AMD Ryzen 6000 Series"]

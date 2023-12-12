@@ -403,7 +403,8 @@ app.get('/computers', (req, res) => {
 app.post('/add-computers', (req, res) => {
     const computerData = new Computer(req.body).toDatabase();
 
-    console.log(computerData)
+    console.log('raw computerData: ', req.body)
+    console.log("computerData: ", computerData)
     pool.getConnection((err, connection) => {
         if (err) {
             console.error('Database connection error:', err);

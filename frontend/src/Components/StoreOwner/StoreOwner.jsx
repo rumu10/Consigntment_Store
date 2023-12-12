@@ -86,11 +86,9 @@ const StoreOwner = () => {
                     </Flex>
 
                 </>
-
         },
-
-
     ];
+
 
     const onRemoveComputer = async (record) => {
 
