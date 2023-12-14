@@ -11,6 +11,7 @@ const Customer = () => {
     const { lat, long } = useParams();
     const [storeList, setStoreList] = useState([]);
     const [computerList, setComputerList] = useState(false);
+    const [filterSelectionState, setFilterSelectionState] = useState(false);
 
     const onFinish_filterComputer = (values) => {
         console.log("filter the features:", values);
@@ -20,6 +21,10 @@ const Customer = () => {
     useEffect(() => {
         fetchStores();
     }, []);
+
+    useEffect(() => {
+        fetchComputers();
+    }, [storeList]);
 
     const computeDistance = (lat1, long1, lat2, long2) => {
         let d = getDistance({ latitude: lat1, longitude: long1 },
@@ -43,7 +48,7 @@ const Customer = () => {
                 })
                 setStoreList(tabledata);
                 //console.log(data.stores);
-            }
+           }
         }
         catch (e) {
             console.log(e);
@@ -66,7 +71,14 @@ const Customer = () => {
 
     const fetchComputers = async (values) => {
         //console.log('Success:', values.selectedStores);
-        let selected = values.selectedStores;
+        let selected = []
+        if(!values || values.selectedStores.length ==0)
+        {
+            selected = storeList.map(p => p.key)
+        }
+        else {
+            selected = values.selectedStores;
+        }
 
         try {
             let allComputers = await Promise.all(selected.map(async (id) => {
@@ -134,27 +146,6 @@ const Customer = () => {
     const ProcessorsOption = ["All Intel Processors", "All AMD Processors"]
     const ProcessGenerationsOption = ["13th Gen Intel", "12th Gen Intel", "11th Gen Intel", "AMD Ryzen 7000 Series", "AMD Ryzen 6000 Series"]
     const GraphicsOption = ["All NVIDIA Graphics", "All AMD Graphics", "All Intel Graphics"]
-
-
-    //    // computer list
-    //    // todo: currently these are mocked computer list data, we need to query these data from the database
-    //    const computerList = [
-    //
-    //        {
-    //            key: '1',
-    //            computerName: 'Computer 2',
-    //            storeName: 'Store 4',
-    //            memory: '8GB',
-    //            storageSize: '1TB',
-    //            processors: 'Intel i9',
-    //            processGenerations: "12th Gen Intel",
-    //            graphics: 'NVIDIA GeForce RTX 4080',
-    //
-    //            price: 329.99,
-    //            cost: 1,
-    //
-    //        },
-    //    ];
 
     const columns = [
         {
@@ -240,7 +231,7 @@ const Customer = () => {
                             label="Price"
                             rules={[
                                 {
-                                    required: true,
+                                    required: !filterSelectionState,
                                 },
                             ]}
                         >
