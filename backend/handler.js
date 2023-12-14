@@ -312,41 +312,40 @@ app.get('/computers', (req, res) => {
             switch (memory) {
                 case '4 GB or less':
                     query += ' AND memory <= ?';
-                    queryParams.push('4 GB');
+                    queryParams.push(4);
                     break;
                 case '8 GB':
                     query += ' AND memory = ?';
-                    queryParams.push('8 GB');
+                    queryParams.push(8);
                     break;
                 case '16 GB':
                     query += ' AND memory = ?';
-                    queryParams.push('16 GB');
+                    queryParams.push(16);
                     break;
                 case '32 GB or more':
                     query += ' AND memory >= ?';
-                    queryParams.push('32 GB');
+                    queryParams.push(32);
                     break;
             }
         }
         
         if (storageSize) {
-            // Convert human-readable format to bytes if necessary
             switch (storageSize) {
                 case '256 GB or less':
                     query += ' AND storage_size <= ?';
-                    queryParams.push('256 GB'); // Or the byte equivalent if stored in bytes
+                    queryParams.push(256);
                     break;
                 case '512 GB':
                     query += ' AND storage_size = ?';
-                    queryParams.push('512 GB'); // Or the byte equivalent if stored in bytes
+                    queryParams.push(512);
                     break;
                 case '1 TB':
                     query += ' AND storage_size = ?';
-                    queryParams.push('1 TB'); // Or the byte equivalent if stored in bytes
+                    queryParams.push(1024);
                     break;
                 case '2 TB or more':
                     query += ' AND storage_size >= ?';
-                    queryParams.push('2 TB'); // Or the byte equivalent if stored in bytes
+                    queryParams.push(2048);
                     break;
             }
         }
@@ -399,6 +398,7 @@ app.get('/computers', (req, res) => {
         });
     });
 });
+
 
 app.post('/add-computers', (req, res) => {
     const computerData = new Computer(req.body).toDatabase();
