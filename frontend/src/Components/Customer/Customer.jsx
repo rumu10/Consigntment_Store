@@ -193,7 +193,7 @@ const Customer = () => {
 
     for (const computer of selectedComputer) {
       await buyAComputer(computer); // await is necessary here, to wait until buy is finished
-                                    // otherwise, fetchComputers can get outdated data
+      // otherwise, fetchComputers can get outdated data
     }
     fetchComputers();
   };
@@ -210,7 +210,7 @@ const Customer = () => {
       })
       .catch(error => {
         console.error('Error from buying computer:', error);
-        CustomNotification("Error!", "Computer \"" + computer.computerName + "\" Was not available.", "error");
+        CustomNotification("Error!", "Buying Computer \"" + computer.computerName + "\" failed." + error.response.data.message, "error");
       })
   }
 
