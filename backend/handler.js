@@ -271,6 +271,7 @@ app.delete('/stores/:store_id', (req, res) => {
 app.get('/computers', (req, res) => {
 
     const {
+        storeId,
         price,
         memory,
         storageSize,
@@ -278,7 +279,7 @@ app.get('/computers', (req, res) => {
         processGenerations,
         graphics
     } = req.query;
-
+    console.log(req.query)
     pool.getConnection((err, connection) => {
         if (err) {
             console.error('Database connection error:', err);
@@ -289,6 +290,11 @@ app.get('/computers', (req, res) => {
         const queryParams = [];
     
         // Add filters to the query
+
+        if (storeId) {
+            query +=' AND store_id = ?';
+            queryParams.push(storeId);
+        }
         if (price) {
             if (price === '$500 or less') {
                 query += ' AND price <= ?';
