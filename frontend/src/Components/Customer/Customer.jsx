@@ -20,10 +20,30 @@ const Customer = () => {
         computerFilter.resetFields();
     }
 
-    const onFinishComputerFilter = () => {
+
+    const objectToQueryString = (obj) => {
+        return Object.entries(obj)
+            .filter(([key, value]) => value !== undefined && value !== null)
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+            .join('&');
+    }
+
+    const onFinishComputerFilter = async () => {
         console.log('Apply filter');
-        const values = computerFilter.getFieldsValue();
-        console.log('Filter to apply: ', values)
+        const filter = computerFilter.getFieldsValue();
+        console.log('Filter to apply: ', filter)
+
+        const filterStr = objectToQueryString(filter);
+        console.log('Filter string:', filterStr);
+        const { data } = await axios.get(`${API_ENDPOINT}computers?${filterStr}`);
+        console.log("filtered data:", data)
+        if (data) {
+            let tabledata = expandRawComputerDataToFitComputerList(data.computers);
+            setComputerList(tabledata);
+            console.log('filtered data:', tabledata)
+        }
+
+
     }
 
     useEffect(() => {
@@ -69,12 +89,25 @@ const Customer = () => {
         if (data) {
             let tabledata = data.computers.map((el) => {
                 return {
-                    ...el,
-                    selectionId: selectionId
+                    ...el
                 }
             })
             return tabledata;
         }
+    }
+
+    const expandRawComputerDataToFitComputerList = (rawComputerData) => {
+        let computers = rawComputerData.flat();
+        //console.log(computers);
+        let tabledata = computers.map((el, i) => {
+            return {
+                ...el,
+                storeName: storeList.find(obj => obj.store.storeId == el.storeId).store.storeName,
+                cost: (storeList.find(obj => obj.store.storeId == el.storeId).distance * 0.03).toFixed(2),
+                key: i
+            }
+        })
+        return tabledata;
     }
 
     const fetchComputers = async (values) => {
@@ -92,17 +125,7 @@ const Customer = () => {
                 return (await fetchComputerForStoreId(id));
             }))
             if (allComputers) {
-                let computers = allComputers.flat();
-                //console.log(computers);
-                let tabledata = computers.map((el, i) => {
-                    let selected = el.selectionId
-                    return {
-                        ...el,
-                        storeName: storeList[selected].store.storeName,
-                        cost: (storeList[selected].distance * 0.03).toFixed(2),
-                        key: i
-                    }
-                })
+                let tabledata = expandRawComputerDataToFitComputerList(allComputers)
                 //console.log('tabledata:', tabledata)
                 setComputerList(tabledata);
             }
