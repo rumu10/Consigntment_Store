@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import CustomNotification from "../../Util/Notification/Notification";
 import axios from "axios";
 import { API_ENDPOINT } from "../../config";
+import ModiFyComputer from "./ModiFyComputer";
 
 const { confirm } = Modal;
 
@@ -30,6 +31,11 @@ const StoreOwner = () => {
 
   const [totalInventory, setTotalInventory] = useState(0);
   const [totalBalance, setTotalbalance] = useState(0);
+  const [computer, setComputer] = useState(false);
+
+  const [open, setOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [modalText, setModalText] = useState('Content of the modal');
 
   const MemoryOption = ["32 GB", "16 GB", "12 GB", "8 GB", "4 GB", "1 GB"];
   const StorageSizeOption = ["2TB", "1TB", "4TB", "512 GB", "256 GB", "128 GB"];
@@ -109,6 +115,8 @@ const StoreOwner = () => {
               size="small"
               style={{ background: "#68D120" }}
               type="primary"
+              onClick={(e) => showModal(record)}
+              // onClick={(e) => onModifyComputer(record)}
             >
               Modify
             </Button>
@@ -125,6 +133,26 @@ const StoreOwner = () => {
       ),
     },
   ];
+
+  const showModal = (record) => {
+    setComputer(record);
+    setOpen(true);
+  };
+
+  const handleCancel = () => {
+    console.log('Clicked cancel button');
+    setOpen(false);
+    setComputer(null);
+
+  };
+
+
+  const handleUpdateSuccess = () => {
+    setComputer(null);
+    setOpen(false); 
+  };
+
+
 
   const onRemoveComputer = async (record) => {
     confirm({
@@ -155,10 +183,9 @@ const StoreOwner = () => {
   };
 
   useEffect(() => {
-    console.log(id);
     fetchComputers();
     fetchStoreName();
-  }, []);
+  }, [computer]);
 
   const fetchStoreName = async () => {
     setLoading(true);
@@ -181,7 +208,7 @@ const StoreOwner = () => {
       const { data } = await axios.get(
         `${API_ENDPOINT}computers?storeId=${id}`,
       );
-      console.log(data);
+      // console.log(data);
       if (data) {
         let tabledata = data?.computers?.map((el, i) => {
           return {
@@ -203,14 +230,14 @@ const StoreOwner = () => {
   };
 
   const onFinish_addComputer = async (values) => {
-    console.log("computer to add:", values);
+    // console.log("computer to add:", values);
     // todo: add logic to add computer to the database
     values.storeId = id;
     values.status = 0;
     setLoading(true);
     try {
       const { data } = await axios.post(`${API_ENDPOINT}add-computers`, values);
-      console.log(data);
+      // console.log(data);
       if (data) {
         CustomNotification("Done!", "Computer Added Successfully", "success");
         form.resetFields();
@@ -413,6 +440,16 @@ const StoreOwner = () => {
           </Col>
         </Row>
       </div>
+      <Modal
+        title= "Update Computer Information"
+        maskClosable={false}
+        open={open}
+        confirmLoading={confirmLoading}
+        onCancel={handleCancel}
+        footer= {null}
+      >
+        <ModiFyComputer  computerObj= {computer} onUpdateSuccess={handleUpdateSuccess} />
+      </Modal>
     </Spin>
   );
 };
