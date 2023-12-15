@@ -21,6 +21,7 @@ const Customer = () => {
   const { lat, long } = useParams();
   const [storeList, setStoreList] = useState([]);
   const [computerList, setComputerList] = useState(false);
+  const [computerToCompare, setComputerToCompare] = useState(false);
 
   const [computerFilter] = Form.useForm();
 
@@ -64,12 +65,17 @@ const Customer = () => {
     fetchComputers();
   }, [storeList]);
 
+  useEffect(() => {
+    computerSelected.resetFields();
+  }, [computerList]);
+
   const computeDistance = (lat1, long1, lat2, long2) => {
     let d = getDistance(
       { latitude: lat1, longitude: long1 },
       { latitude: lat2, longitude: long2 },
     ); // in meter
-    return d * 0.000621371; // convert to miles
+     let dmiles= d * 0.000621371; // convert to miles
+    return(dmiles*0.868421052631579); //convert to nautical miles
   };
 
   const fetchStores = async () => {
@@ -167,6 +173,11 @@ const Customer = () => {
     getCheckboxProps: (record) => console.log(record),
   };
 
+  const onExitCompare = () => {
+    setComputerToCompare()
+    computerSelected.resetFields();
+  }
+
   const onFinishComputerSelection = (action) => {
     const values = computerSelected.getFieldsValue();
 
@@ -175,9 +186,27 @@ const Customer = () => {
     if (action == "buy") {
       console.log("Buy computer: ", values);
     } else {
-      console.log("Compare computer: ", values);
+      let selectedKey = values.selectedComputerKey;
+      let selectedComputer = selectedKey.map(idx => computerList[idx]);
+      let compareResult = compareDataAndAppendResult(selectedComputer)
+      setComputerToCompare(compareResult)
     }
   };
+
+  const compareDataAndAppendResult = (selectedComputer)=>{
+
+    const resultObj = {};
+
+    // Iterate over the fields in one of the existing objects to determine the value for the new object
+    Object.keys(selectedComputer[0]).forEach(field => {
+      const isSame = selectedComputer.every(obj => obj[field] === selectedComputer[0][field]);
+      resultObj[field] = isSame ? 'same' : 'different';
+    });
+
+    // Add the new object to the end of the array
+    selectedComputer.push(resultObj);
+    return(selectedComputer);
+  }
 
   const onSignOut = () => {
     navigate("/login");
@@ -395,7 +424,7 @@ const Customer = () => {
             //labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             layout={"Horizontal"}
-            //style={{ maxWidth: 200 }}
+          //style={{ maxWidth: 200 }}
           >
             <h2 style={{ textAlign: "center" }}>
               Store List by distance (miles){" "}
@@ -438,13 +467,15 @@ const Customer = () => {
               >
                 <Button
                   type="primary"
-                  name="SiteManager"
                   htmlType="submit"
                   onClick={(e) => onFinishComputerSelection("buy")}
                 >
                   Buy Selected
                 </Button>
+
               </Form.Item>
+
+
               <Form.Item
                 wrapperCol={{
                   offset: 8,
@@ -463,6 +494,33 @@ const Customer = () => {
             </Flex>
           </Form>
           <br></br>
+
+          <h2 style={{ textAlign: "center" }}>Compare Computer</h2>
+          <Form>
+            <Form.Item >
+              <Table
+                dataSource={computerToCompare}
+                columns={columns}
+              />
+            </Form.Item>
+
+            <Form.Item
+              wrapperCol={{
+                offset: 8,
+                span: 16,
+              }}
+            >
+              <Button
+                type="primary"
+                name="Store"
+                htmlType="submit"
+                onClick={(e) => onExitCompare()}
+              >
+                Exit Compare
+              </Button>
+            </Form.Item>
+          </Form>
+
         </Col>
 
         <Col className="gutter-row" lg={{ span: 5, offset: 1 }}>
