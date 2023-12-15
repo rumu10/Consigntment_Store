@@ -7,14 +7,13 @@ import {
   Form,
   Table,
   Select,
-  Checkbox,
   Divider,
   Flex,
-  Space,
 } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { API_ENDPOINT } from "../../config";
+import CustomNotification from "../../Util/Notification/Notification";
 
 const Customer = () => {
   const navigate = useNavigate();
@@ -33,7 +32,7 @@ const Customer = () => {
 
   useEffect(() => {
     fetchComputers();
-  }, [storeList ]);
+  }, [storeList]);
 
   useEffect(() => {
     computerSelected.resetFields();
@@ -152,9 +151,9 @@ const Customer = () => {
     //console.log('Success:', values.selectedStores);
     let value = storeSelected.getFieldsValue();
     let selected = value.selectedStoreKey;
-    if (!selected || selected.length==0){
+    if (!selected || selected.length == 0) {
       selected = storeList.map((p) => p.key);
-    } 
+    }
 
     try {
       let allComputers = await Promise.all(
@@ -164,7 +163,7 @@ const Customer = () => {
       );
       if (allComputers) {
         let tabledata = expandRawComputerDataToFitComputerList(allComputers);
-        //console.log('tabledata:', tabledata)
+        console.log('tabledata:', tabledata)
         setComputerList(tabledata);
       }
     } catch {
@@ -184,19 +183,44 @@ const Customer = () => {
     computerSelected.resetFields();
   }
 
-  const onFinishComputerSelection = (action) => {
+  const onFinishComputerSelection_Buy = async () => {
     const values = computerSelected.getFieldsValue();
+    console.log("Computer Selected to Buy:", values);
+    let selectedKey = values.selectedComputerKey;
+    //console.log('selected computer key:', selectedKey)
+    let selectedComputer = selectedKey.map(idx => computerList[idx]);
+    console.log('Selected computer to buy:', selectedComputer)
 
-    console.log("Computer Selected:", values, action);
-
-    if (action == "buy") {
-      console.log("Buy computer: ", values);
-    } else {
-      let selectedKey = values.selectedComputerKey;
-      let selectedComputer = selectedKey.map(idx => computerList[idx]);
-      let compareResult = compareDataAndAppendResult(selectedComputer)
-      setComputerToCompare(compareResult)
+    for (const computer of selectedComputer) {
+      await buyAComputer(computer); // await is necessary here, to wait until buy is finished
+                                    // otherwise, fetchComputers can get outdated data
     }
+    fetchComputers();
+  };
+
+  const buyAComputer = async (computer) => {
+    // send a status =1 request body with the computerId, to signal buying the comptuer
+    let requestTobuyCode = {
+      status: 1
+    }
+    await axios.put(`${API_ENDPOINT}update-computer/${computer.computerId}`, requestTobuyCode)
+      .then(response => {
+        console.log('response from buying computer: ', response);
+        CustomNotification("Done!", "Computer \"" + computer.computerName + "\" Was Purchased Successfully", "success");
+      })
+      .catch(error => {
+        console.error('Error from buying computer:', error);
+        CustomNotification("Error!", "Computer \"" + computer.computerName + "\" Was not available.", "error");
+      })
+  }
+
+  const onFinishComputerSelection_compare = () => {
+    const values = computerSelected.getFieldsValue();
+    console.log("Computer Selected to Compare:", values);
+    let selectedKey = values.selectedComputerKey;
+    let selectedComputer = selectedKey.map(idx => computerList[idx]);
+    let compareResult = compareDataAndAppendResult(selectedComputer)
+    setComputerToCompare(compareResult)
   };
 
   const compareDataAndAppendResult = (selectedComputer) => {
@@ -250,10 +274,10 @@ const Customer = () => {
 
   const storeListColumns = [
     {
-      title: "Store Name", 
+      title: "Store Name",
       dataIndex: "store",
       key: "storeName",
-      render: (store)=>store.storeName,
+      render: (store) => store.storeName,
     },
     {
       title: "Distance (miles)",
@@ -431,7 +455,7 @@ const Customer = () => {
             </Form.Item>
           </Form>
 
-          <Form form = {storeSelected}
+          <Form form={storeSelected}
             style={{ textAlign: "center" }}
             name="storeList"
             //onFinish={fetchComputers}
@@ -448,7 +472,7 @@ const Customer = () => {
                 rowSelection={storeTableRowSelection}
                 rowKey={(storeList) => storeList.key}
                 dataSource={storeList}
-                columns = {storeListColumns}
+                columns={storeListColumns}
               />
             </Form.Item>
             <Form.Item label=" " colon={false} style={{ textAlign: "center" }}>
@@ -481,7 +505,7 @@ const Customer = () => {
                 <Button
                   type="primary"
                   htmlType="submit"
-                  onClick={(e) => onFinishComputerSelection("buy")}
+                  onClick={(e) => onFinishComputerSelection_Buy()}
                 >
                   Buy Selected
                 </Button>
@@ -499,7 +523,7 @@ const Customer = () => {
                   type="primary"
                   name="Store"
                   htmlType="submit"
-                  onClick={(e) => onFinishComputerSelection("compare")}
+                  onClick={(e) => onFinishComputerSelection_compare()}
                 >
                   Compare Selected
                 </Button>
