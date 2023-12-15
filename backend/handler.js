@@ -529,7 +529,9 @@ app.put("/update-computer/:computerId", (req, res) => {
       return;
     }
 
+    // Check the current status of the computer
     const checkStatusQuery = "SELECT status FROM computers WHERE computer_id = ?";
+
     connection.query(checkStatusQuery, [computerId], (err, results) => {
       if (err || results.length === 0) {
         connection.release();
@@ -542,7 +544,7 @@ app.put("/update-computer/:computerId", (req, res) => {
         res.status(409).send({ status: "error", message: "This computer is already sold." });
         return;
       }
-
+    });
     let updateFields = "";
     Object.keys(filteredUpdateData).forEach((key, index) => {
       updateFields += `${key} = ?`;
@@ -552,6 +554,7 @@ app.put("/update-computer/:computerId", (req, res) => {
     });
 
     if (!updateFields) {
+      connection.release();
       res.send({ status: "success", message: "No fields to update." });
       return;
     }
@@ -560,8 +563,8 @@ app.put("/update-computer/:computerId", (req, res) => {
     const queryValues = [...Object.values(filteredUpdateData), computerId];
 
     connection.query(query, queryValues, (err, result) => {
-      connection.release();
       if (err) {
+        connection.release();
         console.error("Database query error:", err);
         res.status(500).send({
           status: "error",
@@ -571,6 +574,7 @@ app.put("/update-computer/:computerId", (req, res) => {
       }
 
       if (result.affectedRows === 0) {
+        connection.release();
         res.status(404).send({
           status: "error",
           message: "Computer with the given ID not found.",
@@ -579,33 +583,31 @@ app.put("/update-computer/:computerId", (req, res) => {
       }
 
       if (isStatusUpdatedToOne) {
-
         const getPriceQuery = "SELECT price FROM computers WHERE computer_id = ?";
 
         connection.query(getPriceQuery, [computerId], (err, results) => {
-            if (err) {
-              console.error("Failed to retrieve computer price:", err);
-              return;
-            }
-            if (results.length === 0) {
-                console.error("Computer not found.");
-                return;
-              }
-            
-            // Calculate 5% of the price
-            const price = results[0].price;
-            const commission = price * 0.05;
-        
-            // Update the manager's balance
-            updateManagerBalance(1, commission, connection);
-          });
+          if (err) {
+            connection.release();
+            console.error("Failed to retrieve computer price:", err);
+            return;
+          }
+          if (results.length === 0) {
+            connection.release();
+            console.error("Computer not found.");
+            return;
+          }
+
+          const price = results[0].price;
+          const commission = price * 0.05;
+
+          updateManagerBalance(1, commission, connection);
+        });
+      } else {
+        res.send({
+          status: "success",
+          message: "Computer updated successfully.",
+        });
       }
-
-
-      res.send({
-        status: "success",
-        message: "Computer updated successfully.",
-      });
     });
   });
 });
