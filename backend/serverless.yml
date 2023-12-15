@@ -18,7 +18,7 @@ functions:
           path: /
           method: ANY
           cors:
-            origin: '*' # Allows access from any origin
+            origin: "*" # Allows access from any origin
             headers: # Specify which headers are allowed in requests
               - Content-Type
               - X-Amz-Date
@@ -28,10 +28,10 @@ functions:
               - X-Amz-User-Agent
             allowCredentials: false # If your client doesn't need to pass authentication headers
       - http:
-          path: '{proxy+}'
+          path: "{proxy+}"
           method: ANY
           cors:
-            origin: '*' # Allows access from any origin
+            origin: "*" # Allows access from any origin
             headers: # Specify which headers are allowed in requests
               - Content-Type
               - X-Amz-Date
@@ -58,4 +58,3 @@ plugins:
 custom:
   serverless-offline:
     httpPort: 4000
-

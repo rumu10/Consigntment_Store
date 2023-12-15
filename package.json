@@ -15,13 +15,20 @@
     "install:backend": "cd backend && npm install",
     "install:frontend": "cd frontend && npm install",
     "install": "concurrently  \"npm run install:backend\" \"npm run install:frontend\"",
-
     "deploy:backend": "cd backend && npm run deploy",
     "deploy:frontend": "cd frontend && npm run deploy",
     "deploy": "concurrently \"npm run deploy:backend\" \"npm run deploy:frontend\""
   },
-
   "dependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "prettier": "^3.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.55.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.4.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.33.2"
   }
 }

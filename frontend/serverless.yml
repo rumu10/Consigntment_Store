@@ -41,10 +41,10 @@ resources:
           CorsRules:
             - AllowedHeaders: ["*"]
               AllowedMethods: ["PUT", "POST", "DELETE"]
-              AllowedOrigins: ["https://7pvpeztz21.execute-api.us-east-1.amazonaws.com"]
+              AllowedOrigins:
+                ["https://7pvpeztz21.execute-api.us-east-1.amazonaws.com"]
               MaxAgeSeconds: 3000
             - AllowedHeaders: ["*"]
               AllowedMethods: ["GET"]
               AllowedOrigins: ["*"]
               MaxAgeSeconds: 3000
-

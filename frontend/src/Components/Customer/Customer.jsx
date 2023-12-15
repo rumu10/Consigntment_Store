@@ -1,428 +1,481 @@
 import React, { useEffect, useState } from "react";
-import { getDistance, orderByDistance } from "geolib"
-import { Button, Row, Col, Form, Table, Select, Checkbox, Divider, Flex, Space } from 'antd';
+import { getDistance, orderByDistance } from "geolib";
+import {
+  Button,
+  Row,
+  Col,
+  Form,
+  Table,
+  Select,
+  Checkbox,
+  Divider,
+  Flex,
+  Space,
+} from "antd";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from 'axios';
-import { API_ENDPOINT } from '../../config';
+import axios from "axios";
+import { API_ENDPOINT } from "../../config";
 
 const Customer = () => {
+  const navigate = useNavigate();
+  const { lat, long } = useParams();
+  const [storeList, setStoreList] = useState([]);
+  const [computerList, setComputerList] = useState(false);
 
-    const navigate = useNavigate();
-    const { lat, long } = useParams();
-    const [storeList, setStoreList] = useState([]);
-    const [computerList, setComputerList] = useState(false);
+  const [computerFilter] = Form.useForm();
 
+  const onResetComputerFilter = () => {
+    console.log("Reset filter");
+    computerFilter.resetFields();
+    fetchComputers();
+  };
 
-    const [computerFilter] = Form.useForm();
+  const objectToQueryString = (obj) => {
+    return Object.entries(obj)
+      .filter(([key, value]) => value !== undefined && value !== null)
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+      )
+      .join("&");
+  };
 
-    const onResetComputerFilter = () => {
-        console.log('Reset filter');
-        computerFilter.resetFields();
-        fetchComputers();
+  const onFinishComputerFilter = async () => {
+    console.log("Apply filter");
+    const filter = computerFilter.getFieldsValue();
+    console.log("Filter to apply: ", filter);
+
+    const filterStr = objectToQueryString(filter);
+    console.log("Filter string:", filterStr);
+    const { data } = await axios.get(`${API_ENDPOINT}computers?${filterStr}`);
+    console.log("filtered data:", data);
+    if (data) {
+      let tabledata = expandRawComputerDataToFitComputerList(data.computers);
+      setComputerList(tabledata);
+      console.log("filtered data:", tabledata);
     }
+  };
 
-    const objectToQueryString = (obj) => {
-        return Object.entries(obj)
-            .filter(([key, value]) => value !== undefined && value !== null)
-            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-            .join('&');
+  useEffect(() => {
+    fetchStores();
+  }, []);
+
+  useEffect(() => {
+    fetchComputers();
+  }, [storeList]);
+
+  const computeDistance = (lat1, long1, lat2, long2) => {
+    let d = getDistance(
+      { latitude: lat1, longitude: long1 },
+      { latitude: lat2, longitude: long2 },
+    ); // in meter
+    return d * 0.000621371; // convert to miles
+  };
+
+  const fetchStores = async () => {
+    try {
+      const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=`);
+      //console.log(data)
+      if (data) {
+        let stores = data.stores;
+        stores = orderByDistance({ latitude: lat, longitude: long }, stores);
+        let tabledata = stores.map((el, i) => {
+          return {
+            store: el,
+            key: i,
+            distance: computeDistance(lat, long, el.latitude, el.longitude), // in miles
+          };
+        });
+        setStoreList(tabledata);
+        //console.log(data.stores);
+      }
+    } catch (e) {
+      console.log(e);
     }
+  };
 
-    const onFinishComputerFilter = async () => {
-        console.log('Apply filter');
-        const filter = computerFilter.getFieldsValue();
-        console.log('Filter to apply: ', filter)
-
-        const filterStr = objectToQueryString(filter);
-        console.log('Filter string:', filterStr);
-        const { data } = await axios.get(`${API_ENDPOINT}computers?${filterStr}`);
-        console.log("filtered data:", data)
-        if (data) {
-            let tabledata = expandRawComputerDataToFitComputerList(data.computers);
-            setComputerList(tabledata);
-            console.log('filtered data:', tabledata)
-        }
-    }
-
-    useEffect(() => {
-        fetchStores();
-    }, []);
-
-    useEffect(() => {
-        fetchComputers();
-    }, [storeList]);
-
-    const computeDistance = (lat1, long1, lat2, long2) => {
-        let d = getDistance({ latitude: lat1, longitude: long1 },
-            { latitude: lat2, longitude: long2 })  // in meter
-        return d * 0.000621371; // convert to miles
-    };
-
-    const fetchStores = async () => {
-        try {
-            const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=`);
-            //console.log(data)
-            if (data) {
-                let stores = data.stores;
-                stores = orderByDistance({ latitude: lat, longitude: long }, stores);
-                let tabledata = stores.map((el, i) => {
-                    return {
-                        store: el,
-                        key: i,
-                        distance: computeDistance(lat, long, el.latitude, el.longitude) // in miles
-                    }
-                })
-                setStoreList(tabledata);
-                //console.log(data.stores);
-            }
-        }
-        catch (e) {
-            console.log(e);
-        }
-    }
-
-    const fetchComputerForStoreId = async (selectionId) => {
-        let storeId = storeList[selectionId].store.storeId;
-        const { data } = await axios.get(`${API_ENDPOINT}computers?storeId=${storeId}`);
-        if (data) {
-            let tabledata = data.computers.map((el) => {
-                return {
-                    ...el
-                }
-            })
-            return tabledata;
-        }
-    }
-
-    const expandRawComputerDataToFitComputerList = (rawComputerData) => {
-        let computers = rawComputerData.flat();
-        //console.log(computers);
-        let tabledata = computers.map((el, i) => {
-            return {
-                ...el,
-                storeName: storeList.find(obj => obj.store.storeId == el.storeId).store.storeName,
-                cost: (storeList.find(obj => obj.store.storeId == el.storeId).distance * 0.03).toFixed(2),
-                key: i
-            }
-        })
-        return tabledata;
-    }
-
-    const fetchComputers = async (values) => {
-        //console.log('Success:', values.selectedStores);
-        let selected = []
-        if (!values || values.selectedStores.length == 0) {
-            selected = storeList.map(p => p.key)
-        }
-        else {
-            selected = values.selectedStores;
-        }
-
-        try {
-            let allComputers = await Promise.all(selected.map(async (id) => {
-                return (await fetchComputerForStoreId(id));
-            }))
-            if (allComputers) {
-                let tabledata = expandRawComputerDataToFitComputerList(allComputers)
-                //console.log('tabledata:', tabledata)
-                setComputerList(tabledata);
-            }
-        }
-        catch {
-            console.log("Error when fetching computer information.")
-
-        }
-
-    }
-
-    const [computerSelected] = Form.useForm();
-    //computerSelected.setFieldsValue({item: computerList})
-
-    const tableRowSelection = {
-        onChange: (selectedRowKeys, selectedRows) => {
-            computerSelected.setFieldsValue({ selectedComputerKey: selectedRowKeys })
-            //            console.log(
-            //                `selectedRowKeys: ${selectedRowKeys}`,
-            //                "selectedRows: ",
-            //                selectedRows
-            //           )
-        },
-        getCheckboxProps: record => console.log(record)
-    };
-
-    const onFinishComputerSelection = (action) => {
-        const values = computerSelected.getFieldsValue();
-
-        console.log('Computer Selected:', values, action);
-
-        if (action == 'buy') {
-            console.log('Buy computer: ', values)
-        }
-        else {
-            console.log('Compare computer: ', values)
-        }
-    }
-
-    const onSignOut = () => {
-        navigate('/login')
-    }
-
-    // filter options
-    const PriceOption = ['$2,001 or more', '$1,501 - $2,000', '$1,001 - $1,500', '$501 - $1000', '$500 or less']
-    const MemoryOption = ["32 GB or more", "12 GB", "16 GB", "8 GB", "4 GB or less"]
-    const StorageSizeOption = ["2 TB or more", "1 TB", "512 GB", "256 GB or less"]
-    const ProcessorsOption = ["All Intel Processors", "All AMD Processors"]
-    const ProcessGenerationsOption = ["13th Gen Intel", "12th Gen Intel", "11th Gen Intel", "AMD Ryzen 7000 Series", "AMD Ryzen 6000 Series"]
-    const GraphicsOption = ["All NVIDIA Graphics", "All AMD Graphics", "All Intel Graphics"]
-
-    const columns = [
-        {
-            title: 'Model Name',
-            dataIndex: 'computerName',
-            key: 'name',
-
-        },
-        {
-            title: 'Store',
-            dataIndex: 'storeName',
-            key: 'name',
-
-        },
-        {
-            title: 'Memory',
-            dataIndex: 'memory',
-            key: 'name',
-
-        },
-        {
-            title: 'Storage',
-            dataIndex: 'storageSize',
-            key: 'name',
-
-        },
-        {
-            title: 'Processor',
-            dataIndex: 'processors',
-            key: 'name',
-
-        },
-        {
-            title: 'Generations',
-            dataIndex: 'processGenerations',
-            key: 'name',
-
-        },
-        {
-            title: 'Graphics',
-            dataIndex: 'graphics',
-            key: 'name',
-
-        },
-
-        {
-            title: 'Price ($)',
-            dataIndex: 'price',
-            key: 'name',
-
-        },
-
-        {
-            title: 'Shipping Cost($0.03/mile)',
-            dataIndex: 'cost',
-            key: 'name',
-
-        },
-
-    ];
-
-    const generateFilterFormItem = (name, label, options) => (
-        <Form.Item name={name} label={label}>
-            <Select allowClear options={options.map((size) => ({ label: size, value: size }))} />
-        </Form.Item>
+  const fetchComputerForStoreId = async (selectionId) => {
+    let storeId = storeList[selectionId].store.storeId;
+    const { data } = await axios.get(
+      `${API_ENDPOINT}computers?storeId=${storeId}`,
     );
+    if (data) {
+      let tabledata = data.computers.map((el) => {
+        return {
+          ...el,
+        };
+      });
+      return tabledata;
+    }
+  };
 
-    return (
-        <div className='customer' style={{ margin: '30px' }}>
+  const expandRawComputerDataToFitComputerList = (rawComputerData) => {
+    let computers = rawComputerData.flat();
+    //console.log(computers);
+    let tabledata = computers.map((el, i) => {
+      return {
+        ...el,
+        storeName: storeList.find((obj) => obj.store.storeId == el.storeId)
+          .store.storeName,
+        cost: (
+          storeList.find((obj) => obj.store.storeId == el.storeId).distance *
+          0.03
+        ).toFixed(2),
+        key: i,
+      };
+    });
+    return tabledata;
+  };
 
-            <Row>
-                <Col className="gutter-row" lg={{ span: 6, offset: 0 }}>
+  const fetchComputers = async (values) => {
+    //console.log('Success:', values.selectedStores);
+    let selected = [];
+    if (!values || values.selectedStores.length == 0) {
+      selected = storeList.map((p) => p.key);
+    } else {
+      selected = values.selectedStores;
+    }
 
-                    <Form
-                        form={computerFilter}
-                        name="basic"
-                        labelCol={{ span: 8, }}
-                        wrapperCol={{ span: 16, }}
-                        style={{
-                            maxWidth: 600, marginTop: "50px"
-                        }}
-                        //onFinish={onFinishComputerFilter}
-                        autoComplete="off"
-                    >
+    try {
+      let allComputers = await Promise.all(
+        selected.map(async (id) => {
+          return await fetchComputerForStoreId(id);
+        }),
+      );
+      if (allComputers) {
+        let tabledata = expandRawComputerDataToFitComputerList(allComputers);
+        //console.log('tabledata:', tabledata)
+        setComputerList(tabledata);
+      }
+    } catch {
+      console.log("Error when fetching computer information.");
+    }
+  };
 
-                        <h2 style={{ textAlign: 'center' }}>Computer Filters</h2>
+  const [computerSelected] = Form.useForm();
+  //computerSelected.setFieldsValue({item: computerList})
 
-                        <Form.Item
-                            name="price"
-                            label="Price"
-                        >
-                            <Select
-                                allowClear
-                                options={PriceOption.map((size) => ({ label: size, value: size }))}
-                            >
-                            </Select>
-                        </Form.Item>
+  const tableRowSelection = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      computerSelected.setFieldsValue({ selectedComputerKey: selectedRowKeys });
+      //            console.log(
+      //                `selectedRowKeys: ${selectedRowKeys}`,
+      //                "selectedRows: ",
+      //                selectedRows
+      //           )
+    },
+    getCheckboxProps: (record) => console.log(record),
+  };
 
-                        <Form.Item
-                            name="memory"
-                            label="Memory"
-                        >
-                            <Select
-                                allowClear
-                                options={MemoryOption.map((size) => ({ label: size, value: size }))}
-                            >
-                            </Select>
-                        </Form.Item>
+  const onFinishComputerSelection = (action) => {
+    const values = computerSelected.getFieldsValue();
 
-                        <Form.Item
-                            name="storageSize"
-                            label="Storage Size"
-                        >
-                            <Select
-                                allowClear
-                                options={StorageSizeOption.map((size) => ({ label: size, value: size }))}
-                            >
-                            </Select>
-                        </Form.Item>
+    console.log("Computer Selected:", values, action);
 
-                        <Form.Item
-                            name="processors"
-                            label="Processors"
-                        >
-                            <Select
-                                allowClear
-                                options={ProcessorsOption.map((size) => ({ label: size, value: size }))}
-                            >
-                            </Select>
-                        </Form.Item>
+    if (action == "buy") {
+      console.log("Buy computer: ", values);
+    } else {
+      console.log("Compare computer: ", values);
+    }
+  };
 
-                        <Form.Item
-                            name="processGenerations"
-                            label="Process Generations"
-                        >
-                            <Select
-                                allowClear
-                                options={ProcessGenerationsOption.map((size) => ({ label: size, value: size }))}
-                            >
-                            </Select>
-                        </Form.Item>
+  const onSignOut = () => {
+    navigate("/login");
+  };
 
-                        <Form.Item
-                            name="graphics"
-                            label="Graphics"
-                        >
-                            <Select
-                                allowClear
-                                options={GraphicsOption.map((size) => ({ label: size, value: size }))}
-                            >
-                            </Select>
-                        </Form.Item>
+  // filter options
+  const PriceOption = [
+    "$2,001 or more",
+    "$1,501 - $2,000",
+    "$1,001 - $1,500",
+    "$501 - $1000",
+    "$500 or less",
+  ];
+  const MemoryOption = [
+    "32 GB or more",
+    "12 GB",
+    "16 GB",
+    "8 GB",
+    "4 GB or less",
+  ];
+  const StorageSizeOption = [
+    "2 TB or more",
+    "1 TB",
+    "512 GB",
+    "256 GB or less",
+  ];
+  const ProcessorsOption = ["All Intel Processors", "All AMD Processors"];
+  const ProcessGenerationsOption = [
+    "13th Gen Intel",
+    "12th Gen Intel",
+    "11th Gen Intel",
+    "AMD Ryzen 7000 Series",
+    "AMD Ryzen 6000 Series",
+  ];
+  const GraphicsOption = [
+    "All NVIDIA Graphics",
+    "All AMD Graphics",
+    "All Intel Graphics",
+  ];
 
-                        <Form.Item style={{ textAlign: 'center' }}
-                            wrapperCol={{
-                                offset: 8,
-                                span: 4,
-                            }}
-                        >
+  const columns = [
+    {
+      title: "Model Name",
+      dataIndex: "computerName",
+      key: "name",
+    },
+    {
+      title: "Store",
+      dataIndex: "storeName",
+      key: "name",
+    },
+    {
+      title: "Memory",
+      dataIndex: "memory",
+      key: "name",
+    },
+    {
+      title: "Storage",
+      dataIndex: "storageSize",
+      key: "name",
+    },
+    {
+      title: "Processor",
+      dataIndex: "processors",
+      key: "name",
+    },
+    {
+      title: "Generations",
+      dataIndex: "processGenerations",
+      key: "name",
+    },
+    {
+      title: "Graphics",
+      dataIndex: "graphics",
+      key: "name",
+    },
 
-                            <Button type="primary" name="FilterButton" htmlType="submit" onClick={e => onFinishComputerFilter()}>
-                                Find Computer
-                            </Button>
-                        </Form.Item>
-                        <Form.Item
-                            wrapperCol={{
-                                offset: 8,
-                                span: 4,
-                            }}
-                        >
-                            <Button type="primary" name="ResetButton" htmlType="submit" onClick={e => onResetComputerFilter()}>
-                                Remove Filter
-                            </Button>
-                        </Form.Item>
-                    </Form>
+    {
+      title: "Price ($)",
+      dataIndex: "price",
+      key: "name",
+    },
 
+    {
+      title: "Shipping Cost($0.03/mile)",
+      dataIndex: "cost",
+      key: "name",
+    },
+  ];
 
-                    <Form style={{ textAlign: 'center' }}
-                        name="storeList"
-                        onFinish={fetchComputers}
-                        //labelCol={{ span: 8 }}
-                        wrapperCol={{ span: 16 }}
-                        layout={'Horizontal'}
-                    //style={{ maxWidth: 200 }}
-                    >
+  const generateFilterFormItem = (name, label, options) => (
+    <Form.Item name={name} label={label}>
+      <Select
+        allowClear
+        options={options.map((size) => ({ label: size, value: size }))}
+      />
+    </Form.Item>
+  );
 
-                        <h2 style={{ textAlign: 'center' }}>Store List by distance (miles) </h2>
-                        <Form.Item style={{ textAlign: 'center' }} name="selectedStores" >
-                            <Checkbox.Group style={{ width: 250 }} options={storeList.map((p) => ({ label: p.store.storeName.concat(',', p.distance.toFixed(2)), value: p.key }))}>
-                            </Checkbox.Group>
-                        </Form.Item>
-                        <Form.Item label=" " colon={false} style={{ textAlign: 'center' }}>
-                            <Button type="primary" htmlType="submit">
-                                Generate Inventory
-                            </Button>
-                        </Form.Item>
-                    </Form>
+  return (
+    <div className="customer" style={{ margin: "30px" }}>
+      <Row>
+        <Col className="gutter-row" lg={{ span: 6, offset: 0 }}>
+          <Form
+            form={computerFilter}
+            name="basic"
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            style={{
+              maxWidth: 600,
+              marginTop: "50px",
+            }}
+            //onFinish={onFinishComputerFilter}
+            autoComplete="off"
+          >
+            <h2 style={{ textAlign: "center" }}>Computer Filters</h2>
 
-                </Col>
-                <Col className="gutter-row" lg={{ span: 8, offset: 1 }}>
-                    <h2 style={{ textAlign: 'center' }}>Computer List</h2>
+            <Form.Item name="price" label="Price">
+              <Select
+                allowClear
+                options={PriceOption.map((size) => ({
+                  label: size,
+                  value: size,
+                }))}
+              ></Select>
+            </Form.Item>
 
-                    <Form form={computerSelected}>
-                        <Form.Item name="selectedComputerKey">
-                            <Table rowSelection={tableRowSelection} rowKey={(computerList) => computerList.key} dataSource={computerList} columns={columns} />
-                        </Form.Item>
+            <Form.Item name="memory" label="Memory">
+              <Select
+                allowClear
+                options={MemoryOption.map((size) => ({
+                  label: size,
+                  value: size,
+                }))}
+              ></Select>
+            </Form.Item>
 
-                        <Flex gap="small" wrap="wrap" style={{ marginLeft: '150px' }}>
-                            <Form.Item
-                                wrapperCol={{
-                                    offset: 8,
-                                    span: 16,
-                                }}
-                            >
-                                <Button type="primary" name="SiteManager" htmlType="submit" onClick={e => onFinishComputerSelection('buy')}>
-                                    Buy Selected
-                                </Button>
-                            </Form.Item>
-                            <Form.Item
-                                wrapperCol={{
-                                    offset: 8,
-                                    span: 16,
-                                }}
-                            >
-                                <Button type="primary" name="Store" htmlType="submit" onClick={e => onFinishComputerSelection('compare')}>
-                                    Compare Selected
-                                </Button>
-                            </Form.Item>
-                        </Flex>
-                    </Form>
-                    <br></br>
+            <Form.Item name="storageSize" label="Storage Size">
+              <Select
+                allowClear
+                options={StorageSizeOption.map((size) => ({
+                  label: size,
+                  value: size,
+                }))}
+              ></Select>
+            </Form.Item>
 
-                </Col>
+            <Form.Item name="processors" label="Processors">
+              <Select
+                allowClear
+                options={ProcessorsOption.map((size) => ({
+                  label: size,
+                  value: size,
+                }))}
+              ></Select>
+            </Form.Item>
 
+            <Form.Item name="processGenerations" label="Process Generations">
+              <Select
+                allowClear
+                options={ProcessGenerationsOption.map((size) => ({
+                  label: size,
+                  value: size,
+                }))}
+              ></Select>
+            </Form.Item>
 
-                <Col className="gutter-row" lg={{ span: 5, offset: 1 }}>
-                    <Button type="primary" block onClick={onSignOut}>
-                        SignOut
-                    </Button>
-                    <Divider />
+            <Form.Item name="graphics" label="Graphics">
+              <Select
+                allowClear
+                options={GraphicsOption.map((size) => ({
+                  label: size,
+                  value: size,
+                }))}
+              ></Select>
+            </Form.Item>
 
-                </Col>
-            </Row>
-        </div>
+            <Form.Item
+              style={{ textAlign: "center" }}
+              wrapperCol={{
+                offset: 8,
+                span: 4,
+              }}
+            >
+              <Button
+                type="primary"
+                name="FilterButton"
+                htmlType="submit"
+                onClick={(e) => onFinishComputerFilter()}
+              >
+                Find Computer
+              </Button>
+            </Form.Item>
+            <Form.Item
+              wrapperCol={{
+                offset: 8,
+                span: 4,
+              }}
+            >
+              <Button
+                type="primary"
+                name="ResetButton"
+                htmlType="submit"
+                onClick={(e) => onResetComputerFilter()}
+              >
+                Remove Filter
+              </Button>
+            </Form.Item>
+          </Form>
 
+          <Form
+            style={{ textAlign: "center" }}
+            name="storeList"
+            onFinish={fetchComputers}
+            //labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            layout={"Horizontal"}
+            //style={{ maxWidth: 200 }}
+          >
+            <h2 style={{ textAlign: "center" }}>
+              Store List by distance (miles){" "}
+            </h2>
+            <Form.Item style={{ textAlign: "center" }} name="selectedStores">
+              <Checkbox.Group
+                style={{ width: 250 }}
+                options={storeList.map((p) => ({
+                  label: p.store.storeName.concat(",", p.distance.toFixed(2)),
+                  value: p.key,
+                }))}
+              ></Checkbox.Group>
+            </Form.Item>
+            <Form.Item label=" " colon={false} style={{ textAlign: "center" }}>
+              <Button type="primary" htmlType="submit">
+                Generate Inventory
+              </Button>
+            </Form.Item>
+          </Form>
+        </Col>
+        <Col className="gutter-row" lg={{ span: 8, offset: 1 }}>
+          <h2 style={{ textAlign: "center" }}>Computer List</h2>
 
-        // {/* This is the page for customer */ }
+          <Form form={computerSelected}>
+            <Form.Item name="selectedComputerKey">
+              <Table
+                rowSelection={tableRowSelection}
+                rowKey={(computerList) => computerList.key}
+                dataSource={computerList}
+                columns={columns}
+              />
+            </Form.Item>
 
-    )
-}
+            <Flex gap="small" wrap="wrap" style={{ marginLeft: "150px" }}>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                <Button
+                  type="primary"
+                  name="SiteManager"
+                  htmlType="submit"
+                  onClick={(e) => onFinishComputerSelection("buy")}
+                >
+                  Buy Selected
+                </Button>
+              </Form.Item>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                <Button
+                  type="primary"
+                  name="Store"
+                  htmlType="submit"
+                  onClick={(e) => onFinishComputerSelection("compare")}
+                >
+                  Compare Selected
+                </Button>
+              </Form.Item>
+            </Flex>
+          </Form>
+          <br></br>
+        </Col>
 
-export default Customer
+        <Col className="gutter-row" lg={{ span: 5, offset: 1 }}>
+          <Button type="primary" block onClick={onSignOut}>
+            SignOut
+          </Button>
+          <Divider />
+        </Col>
+      </Row>
+    </div>
+
+    // {/* This is the page for customer */ }
+  );
+};
+
+export default Customer;

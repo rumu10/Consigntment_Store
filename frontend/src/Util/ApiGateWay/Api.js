@@ -1,9 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
 const AuthAPI = axios.create({
-    baseURL: process.env.REACT_APP_log_in
+  baseURL: process.env.REACT_APP_log_in,
 });
 
-export {
-    AuthAPI
-}
+export { AuthAPI };
