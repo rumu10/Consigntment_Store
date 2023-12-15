@@ -506,9 +506,12 @@ app.post("/add-computers", (req, res) => {
 
 app.put("/update-computer/:computerId", (req, res) => {
   const computerId = req.params.computerId;
+
   const updateData = new Computer(req.body).toDatabase();
 
   console.log(updateData);
+  //sold computer
+  const isStatusUpdatedToOne = updateData.status === 1;
 
   const filteredUpdateData = Object.fromEntries(
     Object.entries(updateData).filter(([key, value]) => value !== undefined),
@@ -560,6 +563,31 @@ app.put("/update-computer/:computerId", (req, res) => {
         });
         return;
       }
+
+      if (isStatusUpdatedToOne) {
+        //todo
+        const getPriceQuery = "SELECT price FROM computers WHERE computer_id = ?";
+
+        connection.query(getPriceQuery, [computerId], (err, results) => {
+            if (err) {
+              console.error("Failed to retrieve computer price:", err);
+              return;
+            }
+        
+            if (results.length === 0) {
+              console.error("Computer not found.");
+              return;
+            }
+        
+            // Calculate 5% of the price
+            const price = results[0].price;
+            const commission = price * 0.05;
+        
+            // Update the manager's balance
+            updateManagerBalance(1, commission, connection);
+          });
+      }
+
 
       res.send({
         status: "success",
