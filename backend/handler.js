@@ -279,7 +279,7 @@ app.get('/computers', (req, res) => {
         processGenerations,
         graphics
     } = req.query;
-
+    console.log(req.query)
     pool.getConnection((err, connection) => {
         if (err) {
             console.error('Database connection error:', err);
