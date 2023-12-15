@@ -602,7 +602,10 @@ app.put("/update-computer/:computerId", (req, res) => {
 
           updateManagerBalance(1, commission, connection);
         });
-      } else {
+      
+       
+      }
+      if (!res.headersSent) {
         res.send({
           status: "success",
           message: "Computer updated successfully.",
