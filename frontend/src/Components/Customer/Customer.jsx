@@ -11,11 +11,19 @@ const Customer = () => {
     const { lat, long } = useParams();
     const [storeList, setStoreList] = useState([]);
     const [computerList, setComputerList] = useState(false);
-    const [filterSelectionState, setFilterSelectionState] = useState(false);
 
-    const onFinish_filterComputer = (values) => {
-        console.log("filter the features:", values);
-        // todo: add logic to add computer to the databas
+
+    const [computerFilter] = Form.useForm();
+
+    const onResetComputerFilter = () => {
+        console.log('Reset filter');
+        computerFilter.resetFields();
+    }
+
+    const onFinishComputerFilter = () => {
+        console.log('Apply filter');
+        const values = computerFilter.getFieldsValue();
+        console.log('Filter to apply: ', values)
     }
 
     useEffect(() => {
@@ -48,7 +56,7 @@ const Customer = () => {
                 })
                 setStoreList(tabledata);
                 //console.log(data.stores);
-           }
+            }
         }
         catch (e) {
             console.log(e);
@@ -72,8 +80,7 @@ const Customer = () => {
     const fetchComputers = async (values) => {
         //console.log('Success:', values.selectedStores);
         let selected = []
-        if(!values || values.selectedStores.length ==0)
-        {
+        if (!values || values.selectedStores.length == 0) {
             selected = storeList.map(p => p.key)
         }
         else {
@@ -214,13 +221,14 @@ const Customer = () => {
                 <Col className="gutter-row" lg={{ span: 6, offset: 0 }}>
 
                     <Form
+                        form={computerFilter}
                         name="basic"
                         labelCol={{ span: 8, }}
                         wrapperCol={{ span: 16, }}
                         style={{
                             maxWidth: 600, marginTop: "50px"
                         }}
-                        onFinish={onFinish_filterComputer}
+                        //onFinish={onFinishComputerFilter}
                         autoComplete="off"
                     >
 
@@ -229,11 +237,6 @@ const Customer = () => {
                         <Form.Item
                             name="price"
                             label="Price"
-                            rules={[
-                                {
-                                    required: !filterSelectionState,
-                                },
-                            ]}
                         >
                             <Select
                                 allowClear
@@ -245,11 +248,6 @@ const Customer = () => {
                         <Form.Item
                             name="memory"
                             label="Memory"
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
                         >
                             <Select
                                 allowClear
@@ -261,11 +259,6 @@ const Customer = () => {
                         <Form.Item
                             name="storageSize"
                             label="Storage Size"
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
                         >
                             <Select
                                 allowClear
@@ -277,11 +270,6 @@ const Customer = () => {
                         <Form.Item
                             name="processors"
                             label="Processors"
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
                         >
                             <Select
                                 allowClear
@@ -293,11 +281,6 @@ const Customer = () => {
                         <Form.Item
                             name="processGenerations"
                             label="Process Generations"
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
                         >
                             <Select
                                 allowClear
@@ -309,11 +292,6 @@ const Customer = () => {
                         <Form.Item
                             name="graphics"
                             label="Graphics"
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
                         >
                             <Select
                                 allowClear
@@ -322,9 +300,25 @@ const Customer = () => {
                             </Select>
                         </Form.Item>
 
-                        <Form.Item style={{ textAlign: 'center' }}>
-                            <Button type="primary" htmlType="submit" >
-                                Find Computers
+                        <Form.Item style={{ textAlign: 'center' }}
+                            wrapperCol={{
+                                offset: 8,
+                                span: 4,
+                            }}
+                        >
+
+                            <Button type="primary" name="FilterButton" htmlType="submit" onClick={e => onFinishComputerFilter()}>
+                                Find Computer
+                            </Button>
+                        </Form.Item>
+                        <Form.Item
+                            wrapperCol={{
+                                offset: 8,
+                                span: 4,
+                            }}
+                        >
+                            <Button type="primary" name="ResetButton" htmlType="submit" onClick={e => onResetComputerFilter()}>
+                                Remove Filter
                             </Button>
                         </Form.Item>
                     </Form>
