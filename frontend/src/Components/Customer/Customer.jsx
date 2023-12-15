@@ -18,8 +18,8 @@ const Customer = () => {
     const onResetComputerFilter = () => {
         console.log('Reset filter');
         computerFilter.resetFields();
+        fetchComputers();
     }
-
 
     const objectToQueryString = (obj) => {
         return Object.entries(obj)
@@ -42,8 +42,6 @@ const Customer = () => {
             setComputerList(tabledata);
             console.log('filtered data:', tabledata)
         }
-
-
     }
 
     useEffect(() => {
@@ -236,6 +234,12 @@ const Customer = () => {
         },
 
     ];
+
+    const generateFilterFormItem = (name, label, options) => (
+        <Form.Item name={name} label={label}>
+            <Select allowClear options={options.map((size) => ({ label: size, value: size }))} />
+        </Form.Item>
+    );
 
     return (
         <div className='customer' style={{ margin: '30px' }}>

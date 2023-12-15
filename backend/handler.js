@@ -324,6 +324,10 @@ app.get('/computers', (req, res) => {
                     query += ' AND memory = ?';
                     queryParams.push(8);
                     break;
+                case '12 GB':
+                    query += ' AND memory = ?';
+                    queryParams.push(12);
+                    break;
                 case '16 GB':
                     query += ' AND memory = ?';
                     queryParams.push(16);
