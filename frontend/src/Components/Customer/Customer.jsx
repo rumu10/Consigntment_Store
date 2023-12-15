@@ -21,9 +21,26 @@ const Customer = () => {
   const { lat, long } = useParams();
   const [storeList, setStoreList] = useState([]);
   const [computerList, setComputerList] = useState(false);
+  const [computerToCompare, setComputerToCompare] = useState(false);
 
   const [computerFilter] = Form.useForm();
+  const [computerSelected] = Form.useForm();
+  const [storeSelected] = Form.useForm();
 
+  useEffect(() => {
+    fetchStores();
+  }, []);
+
+  useEffect(() => {
+    fetchComputers();
+  }, [storeList ]);
+
+  useEffect(() => {
+    computerSelected.resetFields();
+  }, [computerList]);
+
+
+  // computer filter ralated
   const onResetComputerFilter = () => {
     console.log("Reset filter");
     computerFilter.resetFields();
@@ -56,20 +73,14 @@ const Customer = () => {
     }
   };
 
-  useEffect(() => {
-    fetchStores();
-  }, []);
-
-  useEffect(() => {
-    fetchComputers();
-  }, [storeList]);
-
+  // store related 
   const computeDistance = (lat1, long1, lat2, long2) => {
     let d = getDistance(
       { latitude: lat1, longitude: long1 },
       { latitude: lat2, longitude: long2 },
     ); // in meter
-    return d * 0.000621371; // convert to miles
+    let dmiles = d * 0.000621371; // convert to miles
+    return ((dmiles * 0.868421052631579).toFixed(2)); //convert to nautical miles
   };
 
   const fetchStores = async () => {
@@ -94,6 +105,16 @@ const Customer = () => {
     }
   };
 
+  const storeTableRowSelection = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      console.log('Selected Rows in store list:', selectedRows)
+      storeSelected.setFieldsValue({ selectedStoreKey: selectedRowKeys });
+    },
+  };
+
+
+
+  // computer list related
   const fetchComputerForStoreId = async (selectionId) => {
     let storeId = storeList[selectionId].store.storeId;
     const { data } = await axios.get(
@@ -127,14 +148,13 @@ const Customer = () => {
     return tabledata;
   };
 
-  const fetchComputers = async (values) => {
+  const fetchComputers = async () => {
     //console.log('Success:', values.selectedStores);
-    let selected = [];
-    if (!values || values.selectedStores.length == 0) {
+    let value = storeSelected.getFieldsValue();
+    let selected = value.selectedStoreKey;
+    if (!selected || selected.length==0){
       selected = storeList.map((p) => p.key);
-    } else {
-      selected = values.selectedStores;
-    }
+    } 
 
     try {
       let allComputers = await Promise.all(
@@ -152,20 +172,17 @@ const Customer = () => {
     }
   };
 
-  const [computerSelected] = Form.useForm();
-  //computerSelected.setFieldsValue({item: computerList})
-
-  const tableRowSelection = {
+  const computerTableRowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
       computerSelected.setFieldsValue({ selectedComputerKey: selectedRowKeys });
-      //            console.log(
-      //                `selectedRowKeys: ${selectedRowKeys}`,
-      //                "selectedRows: ",
-      //                selectedRows
-      //           )
     },
-    getCheckboxProps: (record) => console.log(record),
   };
+
+  // compare computer related
+  const onExitCompare = () => {
+    setComputerToCompare()
+    computerSelected.resetFields();
+  }
 
   const onFinishComputerSelection = (action) => {
     const values = computerSelected.getFieldsValue();
@@ -175,9 +192,22 @@ const Customer = () => {
     if (action == "buy") {
       console.log("Buy computer: ", values);
     } else {
-      console.log("Compare computer: ", values);
+      let selectedKey = values.selectedComputerKey;
+      let selectedComputer = selectedKey.map(idx => computerList[idx]);
+      let compareResult = compareDataAndAppendResult(selectedComputer)
+      setComputerToCompare(compareResult)
     }
   };
+
+  const compareDataAndAppendResult = (selectedComputer) => {
+    const resultObj = {};
+    Object.keys(selectedComputer[0]).forEach(field => {
+      const isSame = selectedComputer.every(obj => obj[field] === selectedComputer[0][field]);
+      resultObj[field] = isSame ? 'same' : 'different';
+    });
+    selectedComputer.push(resultObj);
+    return (selectedComputer);
+  }
 
   const onSignOut = () => {
     navigate("/login");
@@ -218,7 +248,20 @@ const Customer = () => {
     "All Intel Graphics",
   ];
 
-  const columns = [
+  const storeListColumns = [
+    {
+      title: "Store Name", 
+      dataIndex: "store",
+      key: "storeName",
+      render: (store)=>store.storeName,
+    },
+    {
+      title: "Distance (miles)",
+      dataIndex: "distance",
+      key: "distance",
+    },
+  ]
+  const ComputerColumns = [
     {
       title: "Model Name",
       dataIndex: "computerName",
@@ -388,29 +431,28 @@ const Customer = () => {
             </Form.Item>
           </Form>
 
-          <Form
+          <Form form = {storeSelected}
             style={{ textAlign: "center" }}
             name="storeList"
-            onFinish={fetchComputers}
+            //onFinish={fetchComputers}
             //labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             layout={"Horizontal"}
-            //style={{ maxWidth: 200 }}
+          //style={{ maxWidth: 200 }}
           >
             <h2 style={{ textAlign: "center" }}>
               Store List by distance (miles){" "}
             </h2>
-            <Form.Item style={{ textAlign: "center" }} name="selectedStores">
-              <Checkbox.Group
-                style={{ width: 250 }}
-                options={storeList.map((p) => ({
-                  label: p.store.storeName.concat(",", p.distance.toFixed(2)),
-                  value: p.key,
-                }))}
-              ></Checkbox.Group>
+            <Form.Item style={{ textAlign: "center" }} name="selectedStoreKey">
+              <Table
+                rowSelection={storeTableRowSelection}
+                rowKey={(storeList) => storeList.key}
+                dataSource={storeList}
+                columns = {storeListColumns}
+              />
             </Form.Item>
             <Form.Item label=" " colon={false} style={{ textAlign: "center" }}>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" onClick={(e) => fetchComputers()}>
                 Generate Inventory
               </Button>
             </Form.Item>
@@ -422,10 +464,10 @@ const Customer = () => {
           <Form form={computerSelected}>
             <Form.Item name="selectedComputerKey">
               <Table
-                rowSelection={tableRowSelection}
+                rowSelection={computerTableRowSelection}
                 rowKey={(computerList) => computerList.key}
                 dataSource={computerList}
-                columns={columns}
+                columns={ComputerColumns}
               />
             </Form.Item>
 
@@ -438,13 +480,15 @@ const Customer = () => {
               >
                 <Button
                   type="primary"
-                  name="SiteManager"
                   htmlType="submit"
                   onClick={(e) => onFinishComputerSelection("buy")}
                 >
                   Buy Selected
                 </Button>
+
               </Form.Item>
+
+
               <Form.Item
                 wrapperCol={{
                   offset: 8,
@@ -463,6 +507,33 @@ const Customer = () => {
             </Flex>
           </Form>
           <br></br>
+
+          <h2 style={{ textAlign: "center" }}>Compare Computer</h2>
+          <Form>
+            <Form.Item >
+              <Table
+                dataSource={computerToCompare}
+                columns={ComputerColumns}
+              />
+            </Form.Item>
+
+            <Form.Item
+              wrapperCol={{
+                offset: 8,
+                span: 16,
+              }}
+            >
+              <Button
+                type="primary"
+                name="Store"
+                htmlType="submit"
+                onClick={(e) => onExitCompare()}
+              >
+                Exit Compare
+              </Button>
+            </Form.Item>
+          </Form>
+
         </Col>
 
         <Col className="gutter-row" lg={{ span: 5, offset: 1 }}>
