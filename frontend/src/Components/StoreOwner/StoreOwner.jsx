@@ -116,7 +116,7 @@ const StoreOwner = () => {
               style={{ background: "#68D120" }}
               type="primary"
               onClick={(e) => showModal(record)}
-              // onClick={(e) => onModifyComputer(record)}
+            // onClick={(e) => onModifyComputer(record)}
             >
               Modify
             </Button>
@@ -149,7 +149,7 @@ const StoreOwner = () => {
 
   const handleUpdateSuccess = () => {
     setComputer(null);
-    setOpen(false); 
+    setOpen(false);
   };
 
 
@@ -178,21 +178,23 @@ const StoreOwner = () => {
           console.log(e);
         }
       },
-      onCancel() {},
+      onCancel() { },
     });
   };
 
   useEffect(() => {
     fetchComputers();
-    fetchStoreName();
+    fetchStoreInfo();
   }, [computer]);
 
-  const fetchStoreName = async () => {
+  const fetchStoreInfo = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(`${API_ENDPOINT}stores?storeId=${id}`);
       if (data) {
         setStoreName(data.stores[0].storeName);
+        setTotalInventory(data.stores[0].inventory);
+        setTotalbalance(data.stores[0].balance);
       } else {
         setStoreName(id);
         console.log("Errrr: Fetch store information error.");
@@ -218,8 +220,6 @@ const StoreOwner = () => {
         });
 
         setComputerList(tabledata);
-        setTotalInventory(data?.inventory);
-        setTotalbalance(data?.balance);
         setLoading(false);
       } else {
         console.log("eerrrr login site manager");
@@ -441,14 +441,14 @@ const StoreOwner = () => {
         </Row>
       </div>
       <Modal
-        title= "Update Computer Information"
+        title="Update Computer Information"
         maskClosable={false}
         open={open}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
-        footer= {null}
+        footer={null}
       >
-        <ModiFyComputer  computerObj= {computer} onUpdateSuccess={handleUpdateSuccess} />
+        <ModiFyComputer computerObj={computer} onUpdateSuccess={handleUpdateSuccess} />
       </Modal>
     </Spin>
   );
