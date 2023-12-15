@@ -24,7 +24,23 @@ const Customer = () => {
   const [computerToCompare, setComputerToCompare] = useState(false);
 
   const [computerFilter] = Form.useForm();
+  const [computerSelected] = Form.useForm();
+  const [storeSelected] = Form.useForm();
 
+  useEffect(() => {
+    fetchStores();
+  }, []);
+
+  useEffect(() => {
+    fetchComputers();
+  }, [storeList ]);
+
+  useEffect(() => {
+    computerSelected.resetFields();
+  }, [computerList]);
+
+
+  // computer filter ralated
   const onResetComputerFilter = () => {
     console.log("Reset filter");
     computerFilter.resetFields();
@@ -57,25 +73,14 @@ const Customer = () => {
     }
   };
 
-  useEffect(() => {
-    fetchStores();
-  }, []);
-
-  useEffect(() => {
-    fetchComputers();
-  }, [storeList]);
-
-  useEffect(() => {
-    computerSelected.resetFields();
-  }, [computerList]);
-
+  // store related 
   const computeDistance = (lat1, long1, lat2, long2) => {
     let d = getDistance(
       { latitude: lat1, longitude: long1 },
       { latitude: lat2, longitude: long2 },
     ); // in meter
-     let dmiles= d * 0.000621371; // convert to miles
-    return(dmiles*0.868421052631579); //convert to nautical miles
+    let dmiles = d * 0.000621371; // convert to miles
+    return ((dmiles * 0.868421052631579).toFixed(2)); //convert to nautical miles
   };
 
   const fetchStores = async () => {
@@ -100,6 +105,16 @@ const Customer = () => {
     }
   };
 
+  const storeTableRowSelection = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      console.log('Selected Rows in store list:', selectedRows)
+      storeSelected.setFieldsValue({ selectedStoreKey: selectedRowKeys });
+    },
+  };
+
+
+
+  // computer list related
   const fetchComputerForStoreId = async (selectionId) => {
     let storeId = storeList[selectionId].store.storeId;
     const { data } = await axios.get(
@@ -133,14 +148,13 @@ const Customer = () => {
     return tabledata;
   };
 
-  const fetchComputers = async (values) => {
+  const fetchComputers = async () => {
     //console.log('Success:', values.selectedStores);
-    let selected = [];
-    if (!values || values.selectedStores.length == 0) {
+    let value = storeSelected.getFieldsValue();
+    let selected = value.selectedStoreKey;
+    if (!selected || selected.length==0){
       selected = storeList.map((p) => p.key);
-    } else {
-      selected = values.selectedStores;
-    }
+    } 
 
     try {
       let allComputers = await Promise.all(
@@ -158,21 +172,13 @@ const Customer = () => {
     }
   };
 
-  const [computerSelected] = Form.useForm();
-  //computerSelected.setFieldsValue({item: computerList})
-
-  const tableRowSelection = {
+  const computerTableRowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
       computerSelected.setFieldsValue({ selectedComputerKey: selectedRowKeys });
-      //            console.log(
-      //                `selectedRowKeys: ${selectedRowKeys}`,
-      //                "selectedRows: ",
-      //                selectedRows
-      //           )
     },
-    getCheckboxProps: (record) => console.log(record),
   };
 
+  // compare computer related
   const onExitCompare = () => {
     setComputerToCompare()
     computerSelected.resetFields();
@@ -193,19 +199,14 @@ const Customer = () => {
     }
   };
 
-  const compareDataAndAppendResult = (selectedComputer)=>{
-
+  const compareDataAndAppendResult = (selectedComputer) => {
     const resultObj = {};
-
-    // Iterate over the fields in one of the existing objects to determine the value for the new object
     Object.keys(selectedComputer[0]).forEach(field => {
       const isSame = selectedComputer.every(obj => obj[field] === selectedComputer[0][field]);
       resultObj[field] = isSame ? 'same' : 'different';
     });
-
-    // Add the new object to the end of the array
     selectedComputer.push(resultObj);
-    return(selectedComputer);
+    return (selectedComputer);
   }
 
   const onSignOut = () => {
@@ -247,7 +248,20 @@ const Customer = () => {
     "All Intel Graphics",
   ];
 
-  const columns = [
+  const storeListColumns = [
+    {
+      title: "Store Name", 
+      dataIndex: "store",
+      key: "storeName",
+      render: (store)=>store.storeName,
+    },
+    {
+      title: "Distance (miles)",
+      dataIndex: "distance",
+      key: "distance",
+    },
+  ]
+  const ComputerColumns = [
     {
       title: "Model Name",
       dataIndex: "computerName",
@@ -417,10 +431,10 @@ const Customer = () => {
             </Form.Item>
           </Form>
 
-          <Form
+          <Form form = {storeSelected}
             style={{ textAlign: "center" }}
             name="storeList"
-            onFinish={fetchComputers}
+            //onFinish={fetchComputers}
             //labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             layout={"Horizontal"}
@@ -429,17 +443,16 @@ const Customer = () => {
             <h2 style={{ textAlign: "center" }}>
               Store List by distance (miles){" "}
             </h2>
-            <Form.Item style={{ textAlign: "center" }} name="selectedStores">
-              <Checkbox.Group
-                style={{ width: 250 }}
-                options={storeList.map((p) => ({
-                  label: p.store.storeName.concat(",", p.distance.toFixed(2)),
-                  value: p.key,
-                }))}
-              ></Checkbox.Group>
+            <Form.Item style={{ textAlign: "center" }} name="selectedStoreKey">
+              <Table
+                rowSelection={storeTableRowSelection}
+                rowKey={(storeList) => storeList.key}
+                dataSource={storeList}
+                columns = {storeListColumns}
+              />
             </Form.Item>
             <Form.Item label=" " colon={false} style={{ textAlign: "center" }}>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" onClick={(e) => fetchComputers()}>
                 Generate Inventory
               </Button>
             </Form.Item>
@@ -451,10 +464,10 @@ const Customer = () => {
           <Form form={computerSelected}>
             <Form.Item name="selectedComputerKey">
               <Table
-                rowSelection={tableRowSelection}
+                rowSelection={computerTableRowSelection}
                 rowKey={(computerList) => computerList.key}
                 dataSource={computerList}
-                columns={columns}
+                columns={ComputerColumns}
               />
             </Form.Item>
 
@@ -500,7 +513,7 @@ const Customer = () => {
             <Form.Item >
               <Table
                 dataSource={computerToCompare}
-                columns={columns}
+                columns={ComputerColumns}
               />
             </Form.Item>
 
