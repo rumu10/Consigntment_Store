@@ -565,7 +565,7 @@ app.put("/update-computer/:computerId", (req, res) => {
       }
 
       if (isStatusUpdatedToOne) {
-        //todo
+
         const getPriceQuery = "SELECT price FROM computers WHERE computer_id = ?";
 
         connection.query(getPriceQuery, [computerId], (err, results) => {
@@ -573,12 +573,18 @@ app.put("/update-computer/:computerId", (req, res) => {
               console.error("Failed to retrieve computer price:", err);
               return;
             }
-        
             if (results.length === 0) {
-              console.error("Computer not found.");
-              return;
-            }
-        
+                console.error("Computer not found.");
+                return;
+              }
+            if (results[0].status === 1) {
+                res.status(409).send({
+                  status: "error",
+                  message: "This computer is already sold."
+                });
+                return;
+              }
+            
             // Calculate 5% of the price
             const price = results[0].price;
             const commission = price * 0.05;
