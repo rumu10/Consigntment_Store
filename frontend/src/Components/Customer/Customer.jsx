@@ -210,7 +210,7 @@ const Customer = () => {
       })
       .catch(error => {
         console.error('Error from buying computer:', error);
-        CustomNotification("Error!", "Computer \"" + computer.computerName + "\" Was not available.", "error");
+        CustomNotification("Error!", "Buying Computer \"" + computer.computerName + "\" failed." + error.response.data.message, "error");
       })
   }
 
