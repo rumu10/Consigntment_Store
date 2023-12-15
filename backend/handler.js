@@ -529,6 +529,20 @@ app.put("/update-computer/:computerId", (req, res) => {
       return;
     }
 
+    const checkStatusQuery = "SELECT status FROM computers WHERE computer_id = ?";
+    connection.query(checkStatusQuery, [computerId], (err, results) => {
+      if (err || results.length === 0) {
+        connection.release();
+        res.status(500).send({ status: "error", message: "Error checking computer status or computer not found." });
+        return;
+      }
+
+      if (results[0].status === 1) {
+        connection.release();
+        res.status(409).send({ status: "error", message: "This computer is already sold." });
+        return;
+      }
+
     let updateFields = "";
     Object.keys(filteredUpdateData).forEach((key, index) => {
       updateFields += `${key} = ?`;
@@ -575,13 +589,6 @@ app.put("/update-computer/:computerId", (req, res) => {
             }
             if (results.length === 0) {
                 console.error("Computer not found.");
-                return;
-              }
-            if (results[0].status === 1) {
-                res.status(409).send({
-                  status: "error",
-                  message: "This computer is already sold."
-                });
                 return;
               }
             
