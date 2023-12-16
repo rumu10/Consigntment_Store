@@ -506,9 +506,11 @@ app.post("/add-computers", (req, res) => {
 
 app.put("/update-computer/:computerId", (req, res) => {
   const computerId = req.params.computerId;
+
   const updateData = new Computer(req.body).toDatabase();
 
   console.log(updateData);
+  //sold computer
 
   const filteredUpdateData = Object.fromEntries(
     Object.entries(updateData).filter(([key, value]) => value !== undefined),
@@ -526,45 +528,89 @@ app.put("/update-computer/:computerId", (req, res) => {
       return;
     }
 
-    let updateFields = "";
-    Object.keys(filteredUpdateData).forEach((key, index) => {
-      updateFields += `${key} = ?`;
-      if (index < Object.keys(filteredUpdateData).length - 1) {
-        updateFields += ", ";
-      }
-    });
+    // Check the current status of the computer
+    const checkStatusQuery = "SELECT status FROM computers WHERE computer_id = ?";
 
-    if (!updateFields) {
-      res.send({ status: "success", message: "No fields to update." });
-      return;
-    }
-
-    const query = `UPDATE computers SET ${updateFields} WHERE computer_id = ?`;
-    const queryValues = [...Object.values(filteredUpdateData), computerId];
-
-    connection.query(query, queryValues, (err, result) => {
-      connection.release();
-      if (err) {
-        console.error("Database query error:", err);
-        res.status(500).send({
-          status: "error",
-          message: "Failed to update computer in the database.",
-        });
+    connection.query(checkStatusQuery, [computerId], (err, results) => {
+      if (err || results.length === 0) {
+        connection.release();
+        res.status(500).send({ status: "error", message: "Error checking computer status or computer not found." });
         return;
       }
 
-      if (result.affectedRows === 0) {
-        res.status(404).send({
-          status: "error",
-          message: "Computer with the given ID not found.",
-        });
+      if (results[0].status === 1) {
+        connection.release();
+        res.status(409).send({ status: "error", message: "This computer is already sold." });
         return;
       }
 
-      res.send({
-        status: "success",
-        message: "Computer updated successfully.",
+      let updateFields = "";
+      Object.keys(filteredUpdateData).forEach((key, index) => {
+        updateFields += `${key} = ?`;
+        if (index < Object.keys(filteredUpdateData).length - 1) {
+          updateFields += ", ";
+        }
       });
+  
+      if (!updateFields) {
+        connection.release();
+        res.send({ status: "success", message: "No fields to update." });
+        return;
+      }
+  
+      const query = `UPDATE computers SET ${updateFields} WHERE computer_id = ?`;
+      const queryValues = [...Object.values(filteredUpdateData), computerId];
+  
+      connection.query(query, queryValues, (err, result) => {
+        if (err) {
+          connection.release();
+          console.error("Database query error:", err);
+          res.status(500).send({
+            status: "error",
+            message: "Failed to update computer in the database.",
+          });
+          return;
+        }
+  
+        if (result.affectedRows === 0) {
+          connection.release();
+          res.status(404).send({
+            status: "error",
+            message: "Computer with the given ID not found.",
+          });
+          return;
+        }
+        const isStatusUpdatedToOne = updateData.status === 1;
+  
+        if (isStatusUpdatedToOne) {
+          const getPriceQuery = "SELECT price FROM computers WHERE computer_id = ?";
+  
+          connection.query(getPriceQuery, [computerId], (err, results) => {
+            if (err) {
+              connection.release();
+              console.error("Failed to retrieve computer price:", err);
+              return;
+            }
+            if (results.length === 0) {
+              connection.release();
+              console.error("Computer not found.");
+              return;
+            }
+  
+            const price = results[0].price;
+            const commission = price * 0.05;
+  
+            updateManagerBalance(1, commission, connection);
+          });
+        }
+    });
+    
+      if (!res.headersSent) {
+        res.send({
+          status: "success",
+          message: "Computer updated successfully.",
+        });
+      }
     });
   });
 });

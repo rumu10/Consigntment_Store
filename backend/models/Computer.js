@@ -24,8 +24,12 @@ class Computer {
 
   toDatabase() {
     //convert memory and storageSize collected from frontend to GB for storage in database
-    this.memory = HumanReadableToGB(this.memory);
-    this.storageSize = HumanReadableToGB(this.storageSize);
+    if (this.memory !== undefined) {
+      this.memory = HumanReadableToGB(this.memory);
+    }
+    if (this.storageSize !== undefined) {
+      this.storageSize = HumanReadableToGB(this.storageSize);
+    }
     return _.mapKeys(this, (value, key) => _.snakeCase(key));
   }
 }
