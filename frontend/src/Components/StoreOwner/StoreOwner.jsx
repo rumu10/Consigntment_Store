@@ -220,6 +220,7 @@ const StoreOwner = () => {
         });
 
         setComputerList(tabledata);
+        fetchStoreInfo();
         setLoading(false);
       } else {
         console.log("eerrrr login site manager");
